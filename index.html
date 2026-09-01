@@ -107,35 +107,112 @@
         input:checked + .slider:before { transform: translateX(20px); }
 
 
-        .mushaf-page {
-            background: #faf6e9;
-            color: #1a1a1a;
-            border-radius: var(--radius);
-            padding: 20px 16px;
+        .mushaf-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .mushaf-select {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1.5px solid #d4af37;
+            background: var(--card);
+            color: var(--text);
+            font-size: 0.95em;
+        }
+        .mushaf-nav-btn {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-size: 1.4em;
+            cursor: pointer;
+        }
+        .mushaf-frame {
+            background: linear-gradient(180deg, #f7f0dd 0%, #f3e9c8 100%);
+            border: 3px solid #c9a227;
+            border-radius: 16px;
             box-shadow: var(--shadow);
-            line-height: 2.4;
-            font-size: 1.35em;
+            overflow: hidden;
+        }
+        body.dark-mode .mushaf-frame {
+            background: linear-gradient(180deg, #1e1e2e 0%, #16213e 100%);
+        }
+        .mushaf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(201,162,39,0.15);
+            color: #8a6d1b;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(201,162,39,0.35);
+        }
+        body.dark-mode .mushaf-header { color: #d4af37; }
+        .mushaf-page {
+            color: #1a1a1a;
+            padding: 18px 16px 22px;
+            line-height: 2.55;
+            font-size: 1.4em;
             text-align: justify;
             direction: rtl;
             font-family: "Amiri", "Scheherazade New", "Traditional Arabic", "Noto Naskh Arabic", serif;
-            border: 2px solid #d4af37;
-            min-height: 200px;
+            min-height: 55vh;
         }
-        body.dark-mode .mushaf-page {
-            background: #1e1e2e;
-            color: #f0e6d2;
-            border-color: #d4af37;
-        }
-        .mushaf-ayah {
-            display: inline;
-        }
+        body.dark-mode .mushaf-page { color: #f0e6d2; }
+        .mushaf-ayah { display: inline; }
         .mushaf-num {
             display: inline-block;
             color: #c9a227;
-            font-size: 0.7em;
-            margin: 0 4px;
+            font-size: 0.65em;
+            margin: 0 3px;
             font-family: system-ui, sans-serif;
+            border: 1px solid #d4af37;
+            border-radius: 50%;
+            width: 1.5em; height: 1.5em;
+            line-height: 1.5em;
+            text-align: center;
+            vertical-align: middle;
         }
+        .mushaf-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(201,162,39,0.12);
+            border-top: 1px solid rgba(201,162,39,0.3);
+            gap: 8px;
+        }
+        #repeatBtn.active {
+            background: var(--secondary) !important;
+            color: #1a1a1a !important;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        .cat-card .adhkar-items {
+            display: none;
+            text-align: right;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+        .cat-card.open .adhkar-items { display: block; }
+        .cat-card.open { border-color: var(--secondary); grid-column: 1 / -1; }
+        .cat-card .adhkar-card { margin: 8px 0; text-align: right; }
+        .mushaf-page-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        #mushafStatus { font-size: 0.85em; opacity: 0.8; text-align: center; }
         .adhkar-card {
             background: var(--card);
             padding: 14px;
@@ -213,7 +290,8 @@
         </div>
         <div class="player-controls">
             <button id="prevBtn" class="control-btn" title="السابق" aria-label="السابق">⏮</button>
-            <button id="playBtn" class="control-btn play-btn" title="تشغيل/إيقاف" aria-label="تشغيل">▶️</button>
+            <button id="repeatBtn" class="control-btn" title="تكرار السورة" aria-label="تكرار">🔁</button>
+            <button type="button" id="playBtn" class="control-btn play-btn" title="تشغيل/إيقاف" aria-label="تشغيل">▶️</button>
             <button id="nextBtn" class="control-btn" title="التالي" aria-label="التالي">⏭</button>
             <button id="stopBtn" class="control-btn" title="إيقاف" aria-label="إيقاف">⏹</button>
         </div>
@@ -244,12 +322,10 @@
                 <p style="margin-top:8px;opacity:0.85;line-height:1.5" data-i18n="welcomeDesc">استمع واحفظ تلاوات القرآن الكريم بسهولة للعمل بدون إنترنت</p>
             </div>
             <div class="quick-stats">
-                <div class="stat-card" id="statMushafCard" style="cursor:pointer"><h3 data-i18n="statMushaf">📖 المصحف</h3><p data-i18n="openMushaf">فتح</p></div>
-                <div class="stat-card" id="statAdhkarCard" style="cursor:pointer"><h3 data-i18n="statAdhkar">🤲 الأذكار</h3><p data-i18n="openAdhkar">فتح</p></div>
+                <div class="stat-card" id="statMushafCard" style="cursor:pointer"><h3 data-i18n="statMushaf">📖 المصحف</h3><p style="font-size:1.6em;line-height:1.2">📗</p></div>
+                <div class="stat-card" id="statAdhkarCard" style="cursor:pointer"><h3 data-i18n="statAdhkar">🤲 الأذكار</h3><p style="font-size:1.6em;line-height:1.2">📿</p></div>
                 <div class="stat-card" id="statSavedCard" style="cursor:pointer;border:2px solid var(--secondary)"><h3 data-i18n="statSaved">محفوظة</h3><p id="savedCount">0</p></div>
             </div>
-            <h2 class="section-title" style="margin-top:20px" data-i18n="recentSheikhs">🕐 آخر المشايخ</h2>
-            <div id="recentSheikhsList" class="sheikhs-grid"></div>
             <div id="savedSurahsPanel" style="display:none;margin-top:20px">
                 <h2 class="section-title" data-i18n="savedList">💾 التلاوات المحفوظة</h2>
                 <div id="savedSurahsList" class="surahs-list"></div>
@@ -270,12 +346,24 @@
 
         
         <section id="mushaf" class="section">
-            <h2 class="section-title" data-i18n="mushafTitle">📖 المصحف الشريف</h2>
-            <div class="search-box">
-                <select id="mushafSurahSelect" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid #ccc;background:var(--card);color:var(--text);font-size:1em"></select>
+            <div class="mushaf-toolbar">
+                <button type="button" id="mushafPrev" class="mushaf-nav-btn">›</button>
+                <select id="mushafSurahSelect" class="mushaf-select"></select>
+                <button type="button" id="mushafNext" class="mushaf-nav-btn">‹</button>
             </div>
-            <div id="mushafStatus" style="text-align:center;padding:10px;opacity:0.8;font-size:0.9em"></div>
-            <div id="mushafContent" class="mushaf-page"></div>
+            <div class="mushaf-frame">
+                <div class="mushaf-header">
+                    <span id="mushafJuz">الجزء ١</span>
+                    <span id="mushafSurahLabel">الفاتحة</span>
+                    <span id="mushafPageNum">١</span>
+                </div>
+                <div id="mushafContent" class="mushaf-page"></div>
+                <div class="mushaf-footer">
+                    <button type="button" id="mushafPrev2" class="mushaf-page-btn">الصفحة السابقة</button>
+                    <span id="mushafStatus">—</span>
+                    <button type="button" id="mushafNext2" class="mushaf-page-btn">الصفحة التالية</button>
+                </div>
+            </div>
         </section>
 
         <section id="adhkar" class="section">
@@ -569,7 +657,9 @@
                 mushafTitle: "📖 المصحف الشريف", adhkarTitle: "🤲 الأذكار والأدعية",
                 navMushaf: "📖 مصحف", navAdhkar: "🤲 أذكار",
                 loading: "جاري التحميل...", ayahs: "آية", mushafError: "تعذر تحميل المصحف. تحقق من الاتصال",
-                repeat: "التكرار"
+                repeat: "التكرار",
+                repeatOn: "تكرار السورة مفعّل",
+                repeatOff: "تكرار السورة متوقف"
             },
             en: {
                 appTitle: "La Barkouh Quran", splashTitle: "La Barkouh", sadaqa: "Ongoing charity for all who share it",
@@ -599,7 +689,9 @@
                 mushafTitle: "📖 The Noble Quran", adhkarTitle: "🤲 Adhkar & Duas",
                 navMushaf: "📖 Mushaf", navAdhkar: "🤲 Adhkar",
                 loading: "Loading...", ayahs: "verses", mushafError: "Could not load Mushaf",
-                repeat: "Repeat"
+                repeat: "Repeat",
+                repeatOn: "Surah repeat: ON",
+                repeatOff: "Surah repeat: OFF"
             },
             fr: {
                 appTitle: "La Barkouh Coran", splashTitle: "La Barkouh", sadaqa: "Charité continue pour ceux qui la partagent",
@@ -957,7 +1049,7 @@
                 const surahFilter = (document.getElementById('surahSearch') || {}).value || '';
                 renderSheikhs(sheikhFilter);
                 renderSurahs(surahFilter);
-                renderRecentSheikhs();
+                
             }
         }
 
@@ -1093,7 +1185,7 @@
                 recent.unshift({ server: sheikh.server, name: sheikh.name, country: sheikh.country });
                 recent = recent.slice(0, 6);
                 localStorage.setItem('recentSheikhs', JSON.stringify(recent));
-                renderRecentSheikhs();
+                
             } catch (e) {}
         }
 
@@ -1114,7 +1206,7 @@
                 el.innerHTML = '<div style="font-size:1.6em">👤</div><strong style="font-size:0.9em">' + full.name + '</strong><br><span class="country-tag">' + (full.country || '') + '</span>';
                 el.onclick = () => {
                     window.player.currentSheikh = full;
-                    rememberSheikh(full);
+                    
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                     document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
                     document.querySelector('.nav-btn[data-section="surahs"]').classList.add('active');
@@ -1194,33 +1286,50 @@
 
 
 
+
+        // —— أذكار من حصن المسلم ——
         const ADHKAR_DATA = [
             {
                 id: 'morning',
-                title: { ar: 'أذكار الصباح', en: 'Morning Adhkar' },
+                title: { ar: 'أذكار الصباح', en: 'Morning' },
                 icon: '🌅',
                 items: [
-                    { text: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ', count: 1, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ', count: 1, ref: 'الترمذي' },
-                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ', count: 100, ref: 'مسلم' },
-                    { text: 'لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', count: 10, ref: 'البخاري' },
-                    { text: 'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', count: 3, ref: 'مسلم' },
-                    { text: 'بِسْمِ اللهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ', count: 3, ref: 'أبو داود' },
-                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ', count: 1, ref: 'ابن ماجه' },
-                    { text: 'رَضِيتُ بِاللهِ رَبًّا، وَبِالإِسْلاَمِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا', count: 3, ref: 'أبو داود' }
+                    { text: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيْرَ مَا بَعْدَهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.', count: 1, ref: 'حصن المسلم - الترمذي' },
+                    { text: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ.', count: 1, ref: 'حصن المسلم - سيد الاستغفار' },
+                    { text: 'اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللهُ لاَ إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ.', count: 4, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لاَ إِلَهَ إِلاَّ أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لاَ إِلَهَ إِلاَّ أَنْتَ.', count: 3, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'حَسْبِيَ اللهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.', count: 7, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ وَمِنْ خَلْفِي وَعَنْ يَمِينِي وَعَنْ شِمَالِي وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءًا أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ.', count: 1, ref: 'حصن المسلم - الترمذي' },
+                    { text: 'بِسْمِ اللهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.', count: 3, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'رَضِيتُ بِاللهِ رَبًّا، وَبِالإِسْلاَمِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا.', count: 3, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ.', count: 1, ref: 'حصن المسلم - الحاكم' },
+                    { text: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذَا الْيَوْمِ: فَتْحَهُ، وَنَصْرَهُ، وَنُورَهُ، وَبَرَكَتَهُ، وَهُدَاهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِيهِ وَشَرِّ مَا بَعْدَهُ.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'أَصْبَحْنَا عَلَى فِطْرَةِ الإِسْلاَمِ، وَعَلَى كَلِمَةِ الإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ.', count: 1, ref: 'حصن المسلم - أحمد' },
+                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ.', count: 100, ref: 'حصن المسلم - مسلم' },
+                    { text: 'لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.', count: 10, ref: 'حصن المسلم - البخاري' },
+                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ.', count: 3, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلاً مُتَقَبَّلاً.', count: 1, ref: 'حصن المسلم - ابن ماجه' }
                 ]
             },
             {
                 id: 'evening',
-                title: { ar: 'أذكار المساء', en: 'Evening Adhkar' },
+                title: { ar: 'أذكار المساء', en: 'Evening' },
                 icon: '🌙',
                 items: [
-                    { text: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ', count: 1, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ', count: 1, ref: 'الترمذي' },
-                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ', count: 100, ref: 'مسلم' },
-                    { text: 'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', count: 3, ref: 'مسلم' },
-                    { text: 'بِسْمِ اللهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ', count: 3, ref: 'أبو داود' },
-                    { text: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ', count: 1, ref: 'البخاري - سيد الاستغفار' }
+                    { text: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ.', count: 1, ref: 'حصن المسلم - الترمذي' },
+                    { text: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ لَكَ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ.', count: 1, ref: 'حصن المسلم - سيد الاستغفار' },
+                    { text: 'اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللهُ لاَ إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ.', count: 4, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ.', count: 1, ref: 'حصن المسلم' },
+                    { text: 'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.', count: 3, ref: 'حصن المسلم - مسلم' },
+                    { text: 'بِسْمِ اللهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.', count: 3, ref: 'حصن المسلم' },
+                    { text: 'حَسْبِيَ اللهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.', count: 7, ref: 'حصن المسلم' },
+                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ.', count: 100, ref: 'حصن المسلم - مسلم' },
+                    { text: 'أَعُوذُ بِكَلِمَاتِ اللهِ التَّامَّاتِ الَّتِي لاَ يُجَاوِزُهُنَّ بَرٌّ وَلاَ فَاجِرٌ مِنْ شَرِّ مَا خَلَقَ.', count: 3, ref: 'حصن المسلم' },
+                    { text: 'آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ... (آية الكرسي والبسملة والمعوذات)', count: 1, ref: 'حصن المسلم' }
                 ]
             },
             {
@@ -1228,27 +1337,32 @@
                 title: { ar: 'أذكار بعد الصلاة', en: 'After Prayer' },
                 icon: '🕌',
                 items: [
-                    { text: 'أَسْتَغْفِرُ اللهَ', count: 3, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ، تَبَارَكْتَ يَا ذَا الْجَلاَلِ وَالإِكْرَامِ', count: 1, ref: 'مسلم' },
-                    { text: 'سُبْحَانَ اللهِ', count: 33, ref: 'مسلم' },
-                    { text: 'الْحَمْدُ لِلَّهِ', count: 33, ref: 'مسلم' },
-                    { text: 'اللهُ أَكْبَرُ', count: 33, ref: 'مسلم' },
-                    { text: 'لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ', count: 1, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ', count: 1, ref: 'أبو داود' }
+                    { text: 'أَسْتَغْفِرُ اللهَ', count: 3, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ، تَبَارَكْتَ يَا ذَا الْجَلاَلِ وَالإِكْرَامِ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، اللَّهُمَّ لاَ مَانِعَ لِمَا أَعْطَيْتَ، وَلاَ مُعْطِيَ لِمَا مَنَعْتَ، وَلاَ يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'سُبْحَانَ اللهِ', count: 33, ref: 'حصن المسلم - مسلم' },
+                    { text: 'الْحَمْدُ لِلَّهِ', count: 33, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللهُ أَكْبَرُ', count: 33, ref: 'حصن المسلم - مسلم' },
+                    { text: 'لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'آيَةُ الْكُرْسِيِّ: اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', count: 1, ref: 'حصن المسلم - النسائي' },
+                    { text: 'قُلْ هُوَ اللهُ أَحَدٌ، وَالْمُعَوِّذَتَيْنِ', count: 1, ref: 'حصن المسلم - أبو داود' }
                 ]
             },
             {
                 id: 'sleep',
-                title: { ar: 'أذكار النوم', en: 'Before Sleep' },
+                title: { ar: 'أذكار النوم', en: 'Sleep' },
                 icon: '😴',
                 items: [
-                    { text: 'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا', count: 1, ref: 'البخاري' },
-                    { text: 'اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ', count: 3, ref: 'أبو داود' },
-                    { text: 'سُبْحَانَ اللهِ', count: 33, ref: 'البخاري' },
-                    { text: 'الْحَمْدُ لِلَّهِ', count: 33, ref: 'البخاري' },
-                    { text: 'اللهُ أَكْبَرُ', count: 34, ref: 'البخاري' },
-                    { text: 'اللَّهُمَّ بِاسْمِكَ أَمُوتُ وَأَحْيَا', count: 1, ref: 'البخاري' },
-                    { text: 'آية الكرسي: اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ...', count: 1, ref: 'البخاري' }
+                    { text: 'بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ.', count: 3, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'سُبْحَانَ اللهِ', count: 33, ref: 'حصن المسلم - البخاري' },
+                    { text: 'الْحَمْدُ لِلَّهِ', count: 33, ref: 'حصن المسلم - البخاري' },
+                    { text: 'اللهُ أَكْبَرُ', count: 34, ref: 'حصن المسلم - البخاري' },
+                    { text: 'اللَّهُمَّ بِاسْمِكَ أَمُوتُ وَأَحْيَا.', count: 1, ref: 'حصن المسلم' },
+                    { text: 'اللَّهُمَّ إِنَّكَ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا، لَكَ مَمَاتُهَا وَمَحْيَاهَا، إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا، وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا. اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'آيَةُ الْكُرْسِيِّ', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لاَ مَلْجَأَ وَلاَ مَنْجَا مِنْكَ إِلاَّ إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ.', count: 1, ref: 'حصن المسلم - البخاري' }
                 ]
             },
             {
@@ -1256,10 +1370,11 @@
                 title: { ar: 'أذكار الطعام', en: 'Food' },
                 icon: '🍽️',
                 items: [
-                    { text: 'بِسْمِ اللهِ', count: 1, ref: 'قبل الأكل - أبو داود' },
-                    { text: 'بِسْمِ اللهِ أَوَّلَهُ وَآخِرَهُ', count: 1, ref: 'إن نسي - أبو داود' },
-                    { text: 'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلاَ قُوَّةٍ', count: 1, ref: 'بعد الأكل - أبو داود' },
-                    { text: 'الْحَمْدُ لِلَّهِ حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ، غَيْرَ مَكْفِيٍّ وَلاَ مُوَدَّعٍ وَلاَ مُسْتَغْنًى عَنْهُ رَبَّنَا', count: 1, ref: 'البخاري' }
+                    { text: 'بِسْمِ اللهِ.', count: 1, ref: 'حصن المسلم - قبل الأكل' },
+                    { text: 'بِسْمِ اللهِ أَوَّلَهُ وَآخِرَهُ.', count: 1, ref: 'حصن المسلم - إن نسي' },
+                    { text: 'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلاَ قُوَّةٍ.', count: 1, ref: 'حصن المسلم - بعد الأكل' },
+                    { text: 'الْحَمْدُ لِلَّهِ حَمْدًا كَثِيرًا طَيِّبًا مُبَارَكًا فِيهِ، غَيْرَ مَكْفِيٍّ وَلاَ مُوَدَّعٍ وَلاَ مُسْتَغْنًى عَنْهُ رَبَّنَا.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'اللَّهُمَّ بَارِكْ لَنَا فِيهِ وَأَطْعِمْنَا خَيْرًا مِنْهُ.', count: 1, ref: 'حصن المسلم - للبن' }
                 ]
             },
             {
@@ -1267,10 +1382,9 @@
                 title: { ar: 'دعاء السفر', en: 'Travel' },
                 icon: '✈️',
                 items: [
-                    { text: 'اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ', count: 1, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى', count: 1, ref: 'مسلم' },
-                    { text: 'اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِ عَنَّا بُعْدَهُ', count: 1, ref: 'مسلم' },
-                    { text: 'آيِبُونَ تَائِبُونَ عَابِدُونَ لِرَبِّنَا حَامِدُونَ', count: 1, ref: 'عند الرجوع - البخاري' }
+                    { text: 'اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، اللهُ أَكْبَرُ، سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ. اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِ عَنَّا بُعْدَهُ، اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالْخَلِيفَةُ فِي الأَهْلِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ، وَكَآبَةِ الْمَنْظَرِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ.', count: 1, ref: 'حصن المسلم - مسلم' },
+                    { text: 'آيِبُونَ تَائِبُونَ عَابِدُونَ لِرَبِّنَا حَامِدُونَ.', count: 1, ref: 'حصن المسلم - عند الرجوع' },
+                    { text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ، وَكَآبَةِ الْمَنْظَرِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالأَهْلِ وَالْوَلَدِ.', count: 1, ref: 'حصن المسلم' }
                 ]
             },
             {
@@ -1278,9 +1392,10 @@
                 title: { ar: 'أذكار المسجد', en: 'Mosque' },
                 icon: '🕋',
                 items: [
-                    { text: 'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ', count: 1, ref: 'عند الدخول - مسلم' },
-                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ', count: 1, ref: 'عند الخروج - مسلم' },
-                    { text: 'أَعُوذُ بِاللهِ الْعَظِيمِ، وَبِوَجْهِهِ الْكَرِيمِ، وَسُلْطَانِهِ الْقَدِيمِ، مِنَ الشَّيْطَانِ الرَّجِيمِ', count: 1, ref: 'أبو داود' }
+                    { text: 'اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ.', count: 1, ref: 'حصن المسلم - عند الدخول' },
+                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ.', count: 1, ref: 'حصن المسلم - عند الخروج' },
+                    { text: 'أَعُوذُ بِاللهِ الْعَظِيمِ، وَبِوَجْهِهِ الْكَرِيمِ، وَسُلْطَانِهِ الْقَدِيمِ، مِنَ الشَّيْطَانِ الرَّجِيمِ.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'بِسْمِ اللهِ، وَالصَّلاَةُ وَالسَّلاَمُ عَلَى رَسُولِ اللهِ، اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ.', count: 1, ref: 'حصن المسلم' }
                 ]
             },
             {
@@ -1288,20 +1403,23 @@
                 title: { ar: 'الاستغفار والتوبة', en: 'Istighfar' },
                 icon: '🤍',
                 items: [
-                    { text: 'أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ', count: 100, ref: 'البخاري' },
-                    { text: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ', count: 100, ref: 'الترمذي' },
-                    { text: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ', count: 1, ref: 'سيد الاستغفار - البخاري' }
+                    { text: 'أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ.', count: 100, ref: 'حصن المسلم - البخاري' },
+                    { text: 'رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنْتَ التَّوَّابُ الرَّحِيمُ.', count: 100, ref: 'حصن المسلم - الترمذي' },
+                    { text: 'اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ.', count: 1, ref: 'حصن المسلم - سيد الاستغفار' },
+                    { text: 'أَسْتَغْفِرُ اللهَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ.', count: 1, ref: 'حصن المسلم - أبو داود' },
+                    { text: 'رَبِّ اغْفِرْ لِي خَطِيئَتِي وَجَهْلِي، وَإِسْرَافِي فِي أَمْرِي، وَمَا أَنْتَ أَعْلَمُ بِهِ مِنِّي.', count: 1, ref: 'حصن المسلم - البخاري' }
                 ]
             },
             {
-                id: 'ramadan',
-                title: { ar: 'أذكار رمضان', en: 'Ramadan' },
-                icon: '🌙',
+                id: 'home',
+                title: { ar: 'دخول المنزل والخلاء', en: 'Home' },
+                icon: '🏠',
                 items: [
-                    { text: 'اللَّهُمَّ إِنِّي صُمْتُ لَكَ، وَبِكَ آمَنْتُ، وَعَلَيْكَ تَوَكَّلْتُ، وَعَلَى رِزْقِكَ أَفْطَرْتُ', count: 1, ref: 'عند الإفطار' },
-                    { text: 'ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللهُ', count: 1, ref: 'أبو داود' },
-                    { text: 'اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي', count: 1, ref: 'ليلة القدر - الترمذي' },
-                    { text: 'اللَّهُمَّ بَلِّغْنَا رَمَضَانَ', count: 1, ref: 'قبل رمضان' }
+                    { text: 'بِسْمِ اللهِ وَلَجْنَا، وَبِسْمِ اللهِ خَرَجْنَا، وَعَلَى اللهِ رَبِّنَا تَوَكَّلْنَا.', count: 1, ref: 'حصن المسلم - دخول المنزل' },
+                    { text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ.', count: 1, ref: 'حصن المسلم - دخول الخلاء' },
+                    { text: 'غُفْرَانَكَ.', count: 1, ref: 'حصن المسلم - الخروج من الخلاء' },
+                    { text: 'بِسْمِ اللهِ', count: 1, ref: 'حصن المسلم - عند الخروج من المنزل' },
+                    { text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أَضِلَّ أَوْ أُضَلَّ، أَوْ أَزِلَّ أَوْ أُزَلَّ، أَوْ أَظْلِمَ أَوْ أُظْلَمَ، أَوْ أَجْهَلَ أَوْ يُجْهَلَ عَلَيَّ.', count: 1, ref: 'حصن المسلم - الخروج من المنزل' }
                 ]
             },
             {
@@ -1309,41 +1427,54 @@
                 title: { ar: 'أذكار عامة', en: 'General' },
                 icon: '✨',
                 items: [
-                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيمِ', count: 1, ref: 'البخاري' },
-                    { text: 'لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللهِ', count: 1, ref: 'البخاري' },
-                    { text: 'حَسْبِيَ اللهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ', count: 7, ref: 'أبو داود' },
-                    { text: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ', count: 10, ref: 'الصلاة على النبي' },
-                    { text: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ', count: 1, ref: 'البقرة' },
-                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ', count: 1, ref: 'أبو داود' }
+                    { text: 'سُبْحَانَ اللهِ وَبِحَمْدِهِ، سُبْحَانَ اللهِ الْعَظِيمِ.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللهِ.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'حَسْبِيَ اللهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.', count: 7, ref: 'حصن المسلم' },
+                    { text: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ.', count: 10, ref: 'حصن المسلم' },
+                    { text: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.', count: 1, ref: 'حصن المسلم - البقرة' },
+                    { text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّارِ.', count: 1, ref: 'حصن المسلم' },
+                    { text: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ هَمِّ الْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْجُبْنِ وَالْبُخْلِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ.', count: 1, ref: 'حصن المسلم - البخاري' },
+                    { text: 'حَسْبُنَا اللهُ وَنِعْمَ الْوَكِيلُ.', count: 1, ref: 'حصن المسلم - البخاري' }
                 ]
             }
         ];
 
-        // —— Mushaf (Quran text) ——
-        const MUSHAF_CACHE = 'quran-text-v1';
+        // —— مصحف بصفحات ——
+        // تقريب: ~15 آية في الصفحة
+        const AYAHS_PER_PAGE = 12;
+        let mushafState = { surahId: 1, page: 0, ayahs: [], totalPages: 1 };
 
         async function initMushafSelect() {
             const sel = document.getElementById('mushafSurahSelect');
-            if (!sel || sel.options.length > 0) return;
-            SURAH_NAMES.forEach((name, i) => {
-                const opt = document.createElement('option');
-                opt.value = i + 1;
-                opt.textContent = (i + 1) + ' - ' + name;
-                sel.appendChild(opt);
-            });
-            sel.onchange = () => loadMushafSurah(parseInt(sel.value, 10));
+            if (!sel) return;
+            if (sel.options.length === 0) {
+                SURAH_NAMES.forEach((name, i) => {
+                    const opt = document.createElement('option');
+                    opt.value = i + 1;
+                    opt.textContent = (i + 1) + ' - ' + name;
+                    sel.appendChild(opt);
+                });
+                sel.onchange = () => loadMushafSurah(parseInt(sel.value, 10), 0);
+            }
+            const prev = document.getElementById('mushafPrev');
+            const next = document.getElementById('mushafNext');
+            const prev2 = document.getElementById('mushafPrev2');
+            const next2 = document.getElementById('mushafNext2');
+            if (prev) prev.onclick = () => mushafTurn(-1);
+            if (next) next.onclick = () => mushafTurn(1);
+            if (prev2) prev2.onclick = () => mushafTurn(-1);
+            if (next2) next2.onclick = () => mushafTurn(1);
         }
 
-        async function loadMushafSurah(surahId) {
+        async function loadMushafSurah(surahId, page) {
             const content = document.getElementById('mushafContent');
             const status = document.getElementById('mushafStatus');
             if (!content) return;
             content.innerHTML = '';
-            status.textContent = t('loading') || 'جاري التحميل...';
-
+            if (status) status.textContent = t('loading') || 'جاري التحميل...';
+            mushafState.surahId = surahId;
             const cacheKey = 'mushaf-surah-' + surahId;
             try {
-                // Try localStorage first
                 let data = null;
                 const cached = localStorage.getItem(cacheKey);
                 if (cached) {
@@ -1356,16 +1487,56 @@
                     data = json.data;
                     try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) {}
                 }
-                status.textContent = getSurahDisplay(surahId) + ' — ' + (data.numberOfAyahs || data.ayahs.length) + ' ' + (t('ayahs') || 'آية');
-                let html = '';
-                (data.ayahs || []).forEach(a => {
-                    html += '<span class="mushaf-ayah">' + a.text + '<span class="mushaf-num">﴿' + a.numberInSurah + '﴾</span></span> ';
-                });
-                content.innerHTML = html;
+                mushafState.ayahs = data.ayahs || [];
+                mushafState.totalPages = Math.max(1, Math.ceil(mushafState.ayahs.length / AYAHS_PER_PAGE));
+                mushafState.page = Math.min(Math.max(0, page || 0), mushafState.totalPages - 1);
+                renderMushafPage();
             } catch (e) {
                 console.error(e);
-                status.textContent = t('mushafError') || 'تعذر تحميل المصحف. تحقق من الاتصال.';
-                content.innerHTML = '';
+                if (status) status.textContent = t('mushafError') || 'تعذر تحميل المصحف';
+            }
+        }
+
+        function renderMushafPage() {
+            const content = document.getElementById('mushafContent');
+            const status = document.getElementById('mushafStatus');
+            const start = mushafState.page * AYAHS_PER_PAGE;
+            const slice = mushafState.ayahs.slice(start, start + AYAHS_PER_PAGE);
+            let html = '';
+            slice.forEach(a => {
+                html += '<span class="mushaf-ayah">' + a.text + '<span class="mushaf-num">' + a.numberInSurah + '</span></span> ';
+            });
+            content.innerHTML = html;
+            const pageNum = mushafState.page + 1;
+            if (status) status.textContent = pageNum + ' / ' + mushafState.totalPages;
+            const lbl = document.getElementById('mushafSurahLabel');
+            if (lbl) lbl.textContent = SURAH_NAMES[mushafState.surahId - 1] || '';
+            const pn = document.getElementById('mushafPageNum');
+            if (pn) pn.textContent = String(pageNum);
+            const juzEl = document.getElementById('mushafJuz');
+            if (juzEl) {
+                // تقدير تقريبي للجزء
+                const approx = Math.min(30, Math.ceil((mushafState.surahId / 114) * 30));
+                juzEl.textContent = 'الجزء ' + approx;
+            }
+            const sel = document.getElementById('mushafSurahSelect');
+            if (sel) sel.value = String(mushafState.surahId);
+        }
+
+        function mushafTurn(dir) {
+            const next = mushafState.page + dir;
+            if (next >= 0 && next < mushafState.totalPages) {
+                mushafState.page = next;
+                renderMushafPage();
+                const content = document.getElementById('mushafContent');
+                if (content) content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+            // انتقل لسورة أخرى
+            if (dir > 0 && mushafState.surahId < 114) {
+                loadMushafSurah(mushafState.surahId + 1, 0);
+            } else if (dir < 0 && mushafState.surahId > 1) {
+                loadMushafSurah(mushafState.surahId - 1, 999);
             }
         }
 
@@ -1376,8 +1547,7 @@
             if (btn) btn.classList.add('active');
             document.getElementById('mushaf').classList.add('active');
             initMushafSelect();
-            const sel = document.getElementById('mushafSurahSelect');
-            loadMushafSurah(parseInt(sel.value || '1', 10));
+            loadMushafSurah(mushafState.surahId || 1, mushafState.page || 0);
         }
 
         function openAdhkar() {
@@ -1394,35 +1564,32 @@
             const content = document.getElementById('adhkarContent');
             if (!cats) return;
             cats.innerHTML = '';
-            ADHKAR_DATA.forEach((cat, idx) => {
+            if (content) content.innerHTML = '';
+            ADHKAR_DATA.forEach((cat) => {
                 const el = document.createElement('div');
-                el.className = 'cat-card' + (idx === 0 ? ' active' : '');
+                el.className = 'cat-card';
                 const title = (cat.title[currentLang] || cat.title.ar || cat.title.en);
-                el.innerHTML = '<div style="font-size:1.6em">' + cat.icon + '</div><strong style="font-size:0.85em">' + title + '</strong>';
-                el.onclick = () => {
-                    cats.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
-                    el.classList.add('active');
-                    renderAdhkarItems(cat);
+                let itemsHtml = '';
+                cat.items.forEach(item => {
+                    itemsHtml += '<div class="adhkar-card"><div class="adhkar-text">' + item.text + '</div>' +
+                        '<div class="adhkar-count">' + (t('repeat') || 'التكرار') + ': ' + item.count + '</div>' +
+                        '<div class="adhkar-ref">' + item.ref + '</div></div>';
+                });
+                el.innerHTML = '<div style="font-size:1.6em">' + cat.icon + '</div><strong style="font-size:0.9em">' + title + '</strong>' +
+                    '<div class="adhkar-items">' + itemsHtml + '</div>';
+                el.onclick = (e) => {
+                    // toggle open inside card
+                    const wasOpen = el.classList.contains('open');
+                    cats.querySelectorAll('.cat-card').forEach(c => c.classList.remove('open'));
+                    if (!wasOpen) el.classList.add('open');
                 };
                 cats.appendChild(el);
             });
-            if (ADHKAR_DATA[0]) renderAdhkarItems(ADHKAR_DATA[0]);
         }
 
         function renderAdhkarItems(cat) {
-            const content = document.getElementById('adhkarContent');
-            if (!content) return;
-            content.innerHTML = '';
-            cat.items.forEach(item => {
-                const el = document.createElement('div');
-                el.className = 'adhkar-card';
-                el.innerHTML = '<div class="adhkar-text">' + item.text + '</div>' +
-                    '<div class="adhkar-count">' + (t('repeat') || 'التكرار') + ': ' + item.count + '</div>' +
-                    '<div class="adhkar-ref">' + item.ref + '</div>';
-                content.appendChild(el);
-            });
+            // legacy no-op (items inside cards now)
         }
-
 
         function hideSplash() {
             const splash = document.getElementById('splashScreen');
@@ -1459,7 +1626,7 @@
                     langSel.value = currentLang;
                     langSel.onchange = (e) => applyLanguage(e.target.value);
                 }
-                renderRecentSheikhs();
+                
                 const savedCard = document.getElementById('statSavedCard');
                 if (savedCard) {
                     savedCard.onclick = () => {
@@ -1495,7 +1662,7 @@
                 el.innerHTML = '<div style="font-size:1.8em;margin-bottom:4px">👤</div><strong style="font-size:0.95em">' + s.name + '</strong><br><span class="country-tag">' + s.country + '</span>' + (s.young ? ' <span class="country-tag" style="background:rgba(212,175,55,0.25)">' + t('young') + '</span>' : '');
                 el.onclick = () => {
                     window.player.currentSheikh = s;
-                    rememberSheikh(s);
+                    
                     renderSheikhs(filter);
                     const searchVal = document.getElementById('surahSearch').value;
                     renderSurahs(searchVal);
@@ -1628,12 +1795,11 @@
                     }
                     if (btn.dataset.section === 'home') {
                         updateSavedCount();
-                        renderRecentSheikhs();
+                        
                     }
                     if (btn.dataset.section === 'mushaf') {
                         initMushafSelect();
-                        const sel = document.getElementById('mushafSurahSelect');
-                        loadMushafSurah(parseInt((sel && sel.value) || '1', 10));
+                        loadMushafSurah(mushafState.surahId || 1, mushafState.page || 0);
                     }
                     if (btn.dataset.section === 'adhkar') {
                         renderAdhkarCategories();
@@ -1659,6 +1825,14 @@
             document.getElementById('volumeBar').oninput = (e) => {
                 window.player.audio.volume = e.target.value / 100;
             };
+            const repBtn = document.getElementById('repeatBtn');
+            if (repBtn) {
+                repBtn.onclick = () => {
+                    window.player.audio.loop = !window.player.audio.loop;
+                    repBtn.classList.toggle('active', window.player.audio.loop);
+                    showToast(window.player.audio.loop ? (t('repeatOn') || 'تكرار السورة مفعّل') : (t('repeatOff') || 'تكرار السورة متوقف'));
+                };
+            }
 
             document.getElementById('sheikhSearch').oninput = (e) => renderSheikhs(e.target.value.trim());
             document.getElementById('surahSearch').oninput = (e) => renderSurahs(e.target.value.trim());
