@@ -166,17 +166,21 @@
         body.dark-mode .mushaf-page { color: #f0e6d2; }
         .mushaf-ayah { display: inline; }
         .mushaf-num {
-            display: inline-block;
-            color: #c9a227;
-            font-size: 0.65em;
-            margin: 0 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #8a6d1b;
+            font-size: 0.55em;
+            margin: 0 4px;
             font-family: system-ui, sans-serif;
-            border: 1px solid #d4af37;
+            border: 1.5px solid #c9a227;
             border-radius: 50%;
-            width: 1.5em; height: 1.5em;
-            line-height: 1.5em;
-            text-align: center;
+            min-width: 1.7em;
+            height: 1.7em;
+            line-height: 1;
             vertical-align: middle;
+            background: radial-gradient(circle, #fff8e1, #f0e0a0);
+            font-weight: 700;
         }
         .mushaf-footer {
             display: flex;
@@ -237,6 +241,17 @@
             font-size: 0.8em;
             opacity: 0.7;
         }
+        .sheikh-label {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
         .cat-card {
             background: var(--card);
             padding: 14px 10px;
@@ -251,7 +266,21 @@
             border-color: var(--secondary);
         }
 
-        .main-footer { background: var(--primary-dark); color: white; text-align: center; padding: 16px; margin-top: 28px; font-size: 0.85em; }
+        .sadaqa-bar, .main-footer, footer.sadaqa, #sadaqaBar {
+            font-size: 1.25em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5px;
+            padding: 16px 12px !important;
+        }
+        .main-footer {
+            background: var(--primary-dark, #0d3d22);
+            color: #fff;
+            text-align: center;
+            padding: 18px 14px;
+            font-size: 1.25em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
 
         .toast { position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%); background: var(--primary-dark); color: white; padding: 10px 20px; border-radius: 25px; font-size: 0.9em; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; max-width: 90%; text-align: center; }
         .toast.show { opacity: 1; }
@@ -409,8 +438,8 @@
         </section>
     </main>
 
-    <footer class="main-footer">
-        <p data-i18n="sadaqa">صدقة جارية لكل من ينشرها</p>
+    <footer class="main-footer sadaqa-bar">
+        <p data-i18n="sadaqa" style="font-size:1.3em;font-weight:800;letter-spacing:0.5px;margin:0">صدقة جارية لكل من ينشرها</p>
     </footer>
 
     <div id="toast" class="toast"></div>
@@ -659,7 +688,8 @@
                 loading: "جاري التحميل...", ayahs: "آية", mushafError: "تعذر تحميل المصحف. تحقق من الاتصال",
                 repeat: "التكرار",
                 repeatOn: "تكرار السورة مفعّل",
-                repeatOff: "تكرار السورة متوقف"
+                repeatOff: "تكرار السورة متوقف",
+                sheikhWord: "الشيخ"
             },
             en: {
                 appTitle: "La Barkouh Quran", splashTitle: "La Barkouh", sadaqa: "Ongoing charity for all who share it",
@@ -691,7 +721,8 @@
                 loading: "Loading...", ayahs: "verses", mushafError: "Could not load Mushaf",
                 repeat: "Repeat",
                 repeatOn: "Surah repeat: ON",
-                repeatOff: "Surah repeat: OFF"
+                repeatOff: "Surah repeat: OFF",
+                sheikhWord: "Sheikh"
             },
             fr: {
                 appTitle: "La Barkouh Coran", splashTitle: "La Barkouh", sadaqa: "Charité continue pour ceux qui la partagent",
@@ -1203,7 +1234,7 @@
                 const full = QURAN_DATA.sheikhs.find(x => x.server === s.server) || s;
                 const el = document.createElement('div');
                 el.className = 'sheikh-card';
-                el.innerHTML = '<div style="font-size:1.6em">👤</div><strong style="font-size:0.9em">' + full.name + '</strong><br><span class="country-tag">' + (full.country || '') + '</span>';
+                el.innerHTML = '<div class="sheikh-label">' + (t('sheikhWord') || 'الشيخ') + '</div><strong style="font-size:0.9em">' + full.name + '</strong><br><span class="country-tag">' + (full.country || '') + '</span>';
                 el.onclick = () => {
                     window.player.currentSheikh = full;
                     
@@ -1235,49 +1266,38 @@
                     list.innerHTML = '<p style="opacity:0.6">' + t('noSaved') + '</p>';
                     return;
                 }
+                // تجميع حسب الشيخ
+                const groups = {};
                 keys.forEach(req => {
                     const url = req.url;
-                    // Parse surah id and match sheikh
                     const m = url.match(/(\d{3})\.mp3$/);
                     const surahId = m ? parseInt(m[1], 10) : 0;
-                    let sheikhName = '';
-                    QURAN_DATA.sheikhs.forEach(sh => {
-                        if (url.indexOf(sh.server.replace('https://','').split('/')[0]) >= 0 || url.startsWith(sh.server)) {
-                            sheikhName = sh.name;
-                        }
-                    });
-                    // better match by server path
+                    let sheikh = null;
                     for (const sh of QURAN_DATA.sheikhs) {
-                        if (url.startsWith(sh.server) || url.indexOf(sh.server) === 0) {
-                            sheikhName = sh.name;
-                            break;
-                        }
+                        const pathPart = sh.server.replace(/https?:\/\/[^/]+/, '');
+                        if (pathPart && url.indexOf(pathPart) >= 0) { sheikh = sh; break; }
+                        if (url.startsWith(sh.server)) { sheikh = sh; break; }
                     }
-                    // fallback: check if url includes unique path segment
-                    if (!sheikhName) {
-                        for (const sh of QURAN_DATA.sheikhs) {
-                            const pathPart = sh.server.replace(/https?:\/\/[^/]+/, '');
-                            if (pathPart && url.indexOf(pathPart) >= 0) {
-                                sheikhName = sh.name;
-                                break;
-                            }
-                        }
-                    }
-                    const el = document.createElement('div');
-                    el.className = 'surah-item';
-                    el.innerHTML = '<div class="surah-info"><div class="surah-num">' + (surahId || '?') + '</div><div><strong>' + getSurahDisplay(surahId) + '</strong><br><span style="font-size:0.8em;opacity:0.7">' + sheikhName + '</span></div></div>';
-                    el.onclick = () => {
-                        // find sheikh and play
-                        for (const sh of QURAN_DATA.sheikhs) {
-                            const pathPart = sh.server.replace(/https?:\/\/[^/]+/, '');
-                            if (pathPart && url.indexOf(pathPart) >= 0) {
-                                window.player.currentSheikh = sh;
-                                break;
-                            }
-                        }
-                        if (surahId) window.player.playSurah(surahId);
-                    };
-                    list.appendChild(el);
+                    const key = sheikh ? sheikh.server : 'unknown';
+                    if (!groups[key]) groups[key] = { sheikh: sheikh, items: [] };
+                    groups[key].items.push({ url: url, surahId: surahId });
+                });
+                Object.keys(groups).forEach(key => {
+                    const g = groups[key];
+                    const title = document.createElement('div');
+                    title.style.cssText = 'margin:14px 0 8px;padding:8px 12px;background:var(--primary);color:#fff;border-radius:10px;font-weight:bold';
+                    title.textContent = (t('sheikhWord') || 'الشيخ') + ' ' + (g.sheikh ? g.sheikh.name : '؟') + ' (' + g.items.length + ')';
+                    list.appendChild(title);
+                    g.items.sort((a,b) => a.surahId - b.surahId).forEach(item => {
+                        const el = document.createElement('div');
+                        el.className = 'surah-item';
+                        el.innerHTML = '<div class="surah-info"><div class="surah-num">' + (item.surahId || '?') + '</div><div><strong>' + getSurahDisplay(item.surahId) + '</strong></div></div>';
+                        el.onclick = () => {
+                            if (g.sheikh) window.player.currentSheikh = g.sheikh;
+                            if (item.surahId) window.player.playSurah(item.surahId);
+                        };
+                        list.appendChild(el);
+                    });
                 });
             } catch (e) {
                 list.innerHTML = '<p style="opacity:0.6">' + t('noSaved') + '</p>';
@@ -1285,9 +1305,6 @@
         }
 
 
-
-
-        // —— أذكار من حصن المسلم ——
         const ADHKAR_DATA = [
             {
                 id: 'morning',
@@ -1503,6 +1520,13 @@
             const start = mushafState.page * AYAHS_PER_PAGE;
             const slice = mushafState.ayahs.slice(start, start + AYAHS_PER_PAGE);
             let html = '';
+            // إطار اسم السورة في أول صفحة
+            if (mushafState.page === 0) {
+                html += '<div class="mushaf-surah-banner"><span>سُورَةُ ' + (SURAH_NAMES[mushafState.surahId-1] || '') + '</span></div>';
+                if (mushafState.surahId !== 9 && mushafState.surahId !== 1) {
+                    // basmala often separate - keep from ayah text
+                }
+            }
             slice.forEach(a => {
                 html += '<span class="mushaf-ayah">' + a.text + '<span class="mushaf-num">' + a.numberInSurah + '</span></span> ';
             });
@@ -1650,7 +1674,7 @@
             filter = filter || '';
             const list = document.getElementById('sheikhsList');
             list.innerHTML = '';
-            const filtered = QURAN_DATA.sheikhs.filter(s => (getSurahName(s.id).includes(filter) || SURAH_NAMES[s.id-1].includes(filter)));
+            const q = (filter||'').toLowerCase(); const filtered = QURAN_DATA.sheikhs.filter(s => s.name.includes(filter) || (s.country||'').includes(filter) || s.name.toLowerCase().includes(q));
             if (filtered.length === 0) {
                 list.innerHTML = '<p style="text-align:center;opacity:0.6;grid-column:1/-1">' + t('noResults') + '</p>';
                 return;
@@ -1659,7 +1683,7 @@
                 const isSelected = window.player.currentSheikh.server === s.server;
                 const el = document.createElement('div');
                 el.className = 'sheikh-card' + (isSelected ? ' selected' : '');
-                el.innerHTML = '<div style="font-size:1.8em;margin-bottom:4px">👤</div><strong style="font-size:0.95em">' + s.name + '</strong><br><span class="country-tag">' + s.country + '</span>' + (s.young ? ' <span class="country-tag" style="background:rgba(212,175,55,0.25)">' + t('young') + '</span>' : '');
+                el.innerHTML = '<div class="sheikh-label">' + (t('sheikhWord') || 'الشيخ') + '</div><strong style="font-size:0.95em">' + s.name + '</strong><br><span class="country-tag">' + s.country + '</span>' + (s.young ? ' <span class="country-tag" style="background:rgba(212,175,55,0.25)">' + t('young') + '</span>' : '');
                 el.onclick = () => {
                     window.player.currentSheikh = s;
                     
