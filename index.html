@@ -84,7 +84,26 @@
         .sheikh-card { background: var(--card); padding: 14px 10px; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.2s; }
         .sheikh-card:hover { transform: translateY(-2px); }
         .sheikh-card.selected { border-color: var(--secondary); background: rgba(212, 175, 55, 0.12); }
-        .country-tag { font-size: 0.72em; background: rgba(26,94,58,0.12); color: var(--primary); padding: 2px 8px; border-radius: 10px; margin-top: 5px; display: inline-block; }
+        .country-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(26, 94, 58, 0.1);
+            color: var(--primary);
+            font-size: 0.88em;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-top: 4px;
+            line-height: 1.3;
+        }
+        .country-flag {
+            font-size: 1.35em;
+            line-height: 1;
+        }
+        .country-name {
+            font-size: 0.95em;
+        }
 
         .surahs-list { display: flex; flex-direction: column; gap: 8px; }
         .surah-item { background: var(--card); padding: 12px 14px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -450,9 +469,9 @@
                 </div>
                 <div id="mushafContent" class="mushaf-page"></div>
                 <div class="mushaf-footer">
-                    <button type="button" id="mushafPrev2" class="mushaf-page-btn">الصفحة السابقة</button>
+                    <button type="button" id="mushafPrev2" class="mushaf-page-btn" data-i18n="prevPage">الصفحة السابقة</button>
                     <span id="mushafStatus">—</span>
-                    <button type="button" id="mushafNext2" class="mushaf-page-btn">الصفحة التالية</button>
+                    <button type="button" id="mushafNext2" class="mushaf-page-btn" data-i18n="nextPage">الصفحة التالية</button>
                 </div>
             </div>
         </section>
@@ -504,9 +523,7 @@
         <p data-i18n="sadaqa" style="font-size:1.3em;font-weight:800;letter-spacing:0.5px;margin:0">صدقة جارية لكل من ينشرها</p>
     </footer>
 
-    <div class="share-tip-bar" id="shareTipBar">
-        لا تنسى نشر التطبيق فالدال على الخير كفاعله
-    </div>
+    <div class="share-tip-bar" id="shareTipBar"><span data-i18n="shareTip">لا تنسى نشر التطبيق فالدال على الخير كفاعله</span></div>
 
 
     <div id="toast" class="toast"></div>
@@ -726,6 +743,13 @@
 
         const I18N = {
             ar: {
+                page: "صفحة",
+                shareTip: "لا تنسى نشر التطبيق فالدال على الخير كفاعله",
+                nextPage: "الصفحة التالية",
+                prevPage: "الصفحة السابقة",
+                pageLoadFail: "تعذر تحميل الصفحة. تحقق من الإنترنت.",
+                loadingPage: "جاري تحميل الصفحة...",
+                juz: "الجزء",
                 appTitle: "لا باركوه للقرآن الكريم", splashTitle: "لا باركوه", sadaqa: "صدقة جارية لكل من ينشرها",
                 chooseSurah: "اختر سورة للاستماع", navHome: "🏠 الرئيسية", navSheikhs: "👤 المشايخ",
                 navSurahs: "📖 السور", navSettings: "⚙ الإعدادات",
@@ -759,6 +783,13 @@
                 sheikhWord: "الشيخ"
             },
             en: {
+                shareTip: "Do not forget to share the app — guiding to good is like doing it",
+                page: "Page",
+                juz: "Juz",
+                loadingPage: "Loading page...",
+                pageLoadFail: "Could not load page. Check connection.",
+                prevPage: "Previous page",
+                nextPage: "Next page",
                 appTitle: "La Barkouh Quran", splashTitle: "La Barkouh", sadaqa: "Ongoing charity for all who share it",
                 chooseSurah: "Choose a Surah to listen", navHome: "🏠 Home", navSheikhs: "👤 Reciters",
                 navSurahs: "📖 Surahs", navSettings: "⚙ Settings",
@@ -1146,12 +1177,31 @@
                 const sheikhFilter = (document.getElementById('sheikhSearch') || {}).value || '';
                 const surahFilter = (document.getElementById('surahSearch') || {}).value || '';
                 renderSheikhs(sheikhFilter);
+                if (typeof renderMushafPageImage === 'function' && document.getElementById('mushaf')?.classList.contains('active')) { try { const sel = document.getElementById('mushafSurahSelect'); if (sel) sel.innerHTML=''; renderMushafPageImage(); } catch(e){} }
                 renderSurahs(surahFilter);
                 
             }
         }
 
 
+
+        
+        const COUNTRY_I18N = {"ar": {"السعودية": "السعودية", "الكويت": "الكويت", "مصر": "مصر", "السودان": "السودان", "ليبيا": "ليبيا", "الصومال": "الصومال", "المغرب": "المغرب", "اليمن": "اليمن", "الإمارات": "الإمارات", "العراق": "العراق", "الهند": "الهند", "أفريقيا": "أفريقيا"}, "en": {"السعودية": "Saudi Arabia", "الكويت": "Kuwait", "مصر": "Egypt", "السودان": "Sudan", "ليبيا": "Libya", "الصومال": "Somalia", "المغرب": "Morocco", "اليمن": "Yemen", "الإمارات": "UAE", "العراق": "Iraq", "الهند": "India", "أفريقيا": "Africa"}, "fr": {"السعودية": "Arabie saoudite", "الكويت": "Koweït", "مصر": "Égypte", "السودان": "Soudan", "ليبيا": "Libye", "الصومال": "Somalie", "المغرب": "Maroc", "اليمن": "Yémen", "الإمارات": "Émirats", "العراق": "Irak", "الهند": "Inde", "أفريقيا": "Afrique"}, "tr": {"السعودية": "Suudi Arabistan", "الكويت": "Kuveyt", "مصر": "Mısır", "السودان": "Sudan", "ليبيا": "Libya", "الصومال": "Somali", "المغرب": "Fas", "اليمن": "Yemen", "الإمارات": "BAE", "العراق": "Irak", "الهند": "Hindistan", "أفريقيا": "Afrika"}, "ur": {"السعودية": "سعودی عرب", "الكويت": "کویت", "مصر": "مصر", "السودان": "سوڈان", "ليبيا": "لیبیا", "الصومال": "صومالیہ", "المغرب": "مراکش", "اليمن": "یمن", "الإمارات": "متحدہ عرب امارات", "العراق": "عراق", "الهند": "بھارت", "أفريقيا": "افریقہ"}, "id": {"السعودية": "Arab Saudi", "الكويت": "Kuwait", "مصر": "Mesir", "السودان": "Sudan", "ليبيا": "Libya", "الصومال": "Somalia", "المغرب": "Maroko", "اليمن": "Yaman", "الإمارات": "UEA", "العراق": "Irak", "الهند": "India", "أفريقيا": "Afrika"}, "ms": {"السعودية": "Arab Saudi", "الكويت": "Kuwait", "مصر": "Mesir", "السودان": "Sudan", "ليبيا": "Libya", "الصومال": "Somalia", "المغرب": "Maghribi", "اليمن": "Yaman", "الإمارات": "UAE", "العراق": "Iraq", "الهند": "India", "أفريقيا": "Afrika"}, "ha": {"السعودية": "Saudi Arabia", "الكويت": "Kuwait", "مصر": "Masar", "السودان": "Sudan", "ليبيا": "Libya", "الصومال": "Somaliya", "المغرب": "Maroko", "اليمن": "Yaman", "الإمارات": "UAE", "العراق": "Iraq", "الهند": "Indiya", "أفريقيا": "Afirka"}, "so": {"السعودية": "Sacuudi Carabiya", "الكويت": "Kuwayt", "مصر": "Masar", "السودان": "Suudaan", "ليبيا": "Liibiya", "الصومال": "Soomaaliya", "المغرب": "Morocco", "اليمن": "Yaman", "الإمارات": "Imaaraadka", "العراق": "Ciraaq", "الهند": "Hindiya", "أفريقيا": "Afrika"}, "es": {"السعودية": "Arabia Saudita", "الكويت": "Kuwait", "مصر": "Egipto", "السودان": "Sudán", "ليبيا": "Libia", "الصومال": "Somalia", "المغرب": "Marruecos", "اليمن": "Yemen", "الإمارات": "EAU", "العراق": "Irak", "الهند": "India", "أفريقيا": "África"}, "it": {"السعودية": "Arabia Saudita", "الكويت": "Kuwait", "مصر": "Egitto", "السودان": "Sudan", "ليبيا": "Libia", "الصومال": "Somalia", "المغرب": "Marocco", "اليمن": "Yemen", "الإمارات": "EAU", "العراق": "Iraq", "الهند": "India", "أفريقيا": "Africa"}, "de": {"السعودية": "Saudi-Arabien", "الكويت": "Kuwait", "مصر": "Ägypten", "السودان": "Sudan", "ليبيا": "Libyen", "الصومال": "Somalia", "المغرب": "Marokko", "اليمن": "Jemen", "الإمارات": "VAE", "العراق": "Irak", "الهند": "Indien", "أفريقيا": "Afrika"}, "pt": {"السعودية": "Arábia Saudita", "الكويت": "Kuwait", "مصر": "Egito", "السودان": "Sudão", "ليبيا": "Líbia", "الصومال": "Somália", "المغرب": "Marrocos", "اليمن": "Iêmen", "الإمارات": "EAU", "العراق": "Iraque", "الهند": "Índia", "أفريقيا": "África"}, "hi": {"السعودية": "सऊदी अरब", "الكويت": "कुवैत", "مصر": "मिस्र", "السودان": "सूडान", "ليبيا": "लीबिया", "الصومال": "सोमालिया", "المغرب": "मोरक्को", "اليمن": "यमन", "الإمارات": "यूएई", "العراق": "इराक", "الهند": "भारत", "أفريقيا": "अफ़्रीका"}, "ku": {"السعودية": "عەرەبستانی سعوودی", "الكويت": "کوێت", "مصر": "میسر", "السودان": "سوودان", "ليبيا": "لیبیا", "الصومال": "سۆمالیا", "المغرب": "مەغریب", "اليمن": "یەمەن", "الإمارات": "ئیماڕات", "العراق": "عێراق", "الهند": "هیندستان", "أفريقيا": "ئەفریقا"}};
+        const COUNTRY_FLAGS = {"السعودية": "🇸🇦", "الكويت": "🇰🇼", "مصر": "🇪🇬", "السودان": "🇸🇩", "ليبيا": "🇱🇾", "الصومال": "🇸🇴", "المغرب": "🇲🇦", "اليمن": "🇾🇪", "الإمارات": "🇦🇪", "العراق": "🇮🇶", "الهند": "🇮🇳", "أفريقيا": "🌍"};
+
+        function getCountryBase(raw) {
+            if (!raw) return '';
+            // إزالة الأعلام والرموز
+            return String(raw).replace(/[\uD800-\uDFFF]/g, '').replace(/[\u2600-\u27BF]/g, '').trim();
+        }
+
+        function getCountryLabel(raw) {
+            const base = getCountryBase(raw);
+            const flag = COUNTRY_FLAGS[base] || '';
+            const pack = COUNTRY_I18N[currentLang] || COUNTRY_I18N.en || COUNTRY_I18N.ar;
+            const name = (pack && pack[base]) || (COUNTRY_I18N.ar && COUNTRY_I18N.ar[base]) || base || raw;
+            return '<span class="country-flag">' + flag + '</span> <span class="country-name">' + name + '</span>';
+        }
 
         function getSurahName(id) {
             const idx = id - 1;
@@ -1686,46 +1736,75 @@
         }
 
         function mushafPageUrl(n) {
-            // مصحف المدينة - جامعة الملك سعود (نفس quran.ksu.edu.sa)
-            return 'https://quran.ksu.edu.sa/png_big/' + n + '.png';
+            const p = String(n).padStart(3, '0');
+            // مصادر تدعم CORS (تعمل من GitHub Pages)
+            return 'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg';
         }
 
         function renderMushafPageImage() {
             const content = document.getElementById('mushafContent');
             const status = document.getElementById('mushafStatus');
             if (!content) return;
-            let n = mushafState.pageNum || 1;
+            let n = parseInt(mushafState.pageNum, 10) || 1;
             if (n < 1) n = 1;
             if (n > TOTAL_MUSHAF_PAGES) n = TOTAL_MUSHAF_PAGES;
             mushafState.pageNum = n;
-            if (status) status.textContent = 'صفحة ' + n + ' / ' + TOTAL_MUSHAF_PAGES;
+            const pageLabel = (typeof t === 'function' ? t('page') : 'صفحة') + ' ' + n + ' / ' + TOTAL_MUSHAF_PAGES;
+            if (status) status.textContent = pageLabel;
             const pn = document.getElementById('mushafPageNum');
             if (pn) pn.textContent = String(n);
-            // تقدير السورة من رقم الصفحة
             let sid = 1;
             for (let i = 1; i <= 114; i++) {
                 if ((SURAH_START_PAGE[i] || 1) <= n) sid = i;
             }
             mushafState.surahId = sid;
             const sl = document.getElementById('mushafSurahLabel');
-            if (sl) sl.textContent = getSurahDisplay(sid);
+            if (sl) sl.textContent = getSurahName(sid);
+            const juzEl = document.getElementById('mushafJuz');
+            if (juzEl) {
+                // تقريب الجزء: كل جزء ~20 صفحة
+                const juz = Math.min(30, Math.max(1, Math.ceil(n / 20)));
+                juzEl.textContent = (typeof t === 'function' ? t('juz') : 'الجزء') + ' ' + juz;
+            }
             const sel = document.getElementById('mushafSurahSelect');
-            if (sel) sel.value = String(sid);
-            content.innerHTML = '<div class="mushaf-loading">جاري تحميل صفحة المصحف...</div>';
-            const img = document.createElement('img');
-            img.className = 'mushaf-page-img';
-            img.alt = 'مصحف المدينة - صفحة ' + n;
-            img.decoding = 'async';
-            img.loading = 'eager';
+            if (sel) {
+                if (!sel.options.length) {
+                    for (let i = 1; i <= 114; i++) {
+                        const o = document.createElement('option');
+                        o.value = i;
+                        o.textContent = i + ' - ' + getSurahName(i);
+                        sel.appendChild(o);
+                    }
+                    sel.onchange = () => {
+                        const id = parseInt(sel.value, 10);
+                        mushafState.surahId = id;
+                        mushafState.pageNum = SURAH_START_PAGE[id] || 1;
+                        renderMushafPageImage();
+                    };
+                } else {
+                    // تحديث أسماء السور عند تغيير اللغة
+                    Array.from(sel.options).forEach((o, idx) => {
+                        const id = parseInt(o.value, 10);
+                        if (id) o.textContent = id + ' - ' + getSurahName(id);
+                    });
+                }
+                sel.value = String(sid);
+            }
+            content.innerHTML = '<div class="mushaf-loading">' + (typeof t === 'function' ? t('loadingPage') : 'جاري تحميل الصفحة...') + '</div>';
+            const p = String(n).padStart(3, '0');
             const sources = [
-                'https://quran.ksu.edu.sa/png_big/' + n + '.png',
-                'https://www.mp3quran.net/api/quran_pages_svg/' + String(n).padStart(3,'0') + '.svg',
-                'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + String(n).padStart(3,'0') + '.svg'
+                'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg',
+                'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + p + '.svg'
             ];
             let si = 0;
+            const img = document.createElement('img');
+            img.className = 'mushaf-page-img';
+            img.alt = 'Mushaf page ' + n;
+            img.draggable = false;
             const tryNext = () => {
                 if (si >= sources.length) {
-                    content.innerHTML = '<p style="text-align:center;padding:24px;line-height:1.8">تعذر تحميل الصفحة.<br>تحقق من الاتصال بالإنترنت ثم أعد المحاولة.</p>';
+                    content.innerHTML = '<p style="text-align:center;padding:24px;line-height:1.8;color:#c0392b">' +
+                        (typeof t === 'function' ? t('pageLoadFail') : 'تعذر تحميل الصفحة. تحقق من الإنترنت.') + '</p>';
                     return;
                 }
                 img.onload = () => {
@@ -1733,7 +1812,7 @@
                     content.appendChild(img);
                 };
                 img.onerror = () => { si++; tryNext(); };
-                img.src = sources[si];
+                img.src = sources[si++];
             };
             tryNext();
         }
@@ -1751,6 +1830,30 @@
             renderMushafPageImage();
         }
 
+
+        
+        (function setupMushafSwipe() {
+            let startX = 0, startY = 0;
+            function bind() {
+                const el = document.getElementById('mushafContent');
+                if (!el || el.dataset.swipeOk) return;
+                el.dataset.swipeOk = '1';
+                el.addEventListener('touchstart', function(e) {
+                    startX = e.changedTouches[0].clientX;
+                    startY = e.changedTouches[0].clientY;
+                }, {passive: true});
+                el.addEventListener('touchend', function(e) {
+                    const dx = e.changedTouches[0].clientX - startX;
+                    const dy = e.changedTouches[0].clientY - startY;
+                    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)) return;
+                    // RTL: السحب لليمين = الصفحة السابقة، لليسار = التالية
+                    if (dx > 0) mushafTurn(-1);
+                    else mushafTurn(1);
+                }, {passive: true});
+            }
+            document.addEventListener('DOMContentLoaded', bind);
+            setInterval(bind, 1500);
+        })();
 
         function hideSplash() {
             const splash = document.getElementById('splashScreen');
@@ -1820,7 +1923,7 @@
                 const isSelected = window.player.currentSheikh.server === s.server;
                 const el = document.createElement('div');
                 el.className = 'sheikh-card' + (isSelected ? ' selected' : '');
-                el.innerHTML = '<div class="sheikh-label">' + (t('sheikhWord') || 'الشيخ') + '</div><div class="sheikh-name">' + s.name + '</div><span class="country-tag">' + s.country + '</span>' + (s.young ? ' <span class="country-tag" style="background:rgba(212,175,55,0.25)">' + t('young') + '</span>' : '');
+                el.innerHTML = '<div class="sheikh-label">' + (t('sheikhWord') || 'الشيخ') + '</div><div class="sheikh-name">' + s.name + '</div><span class="country-tag">' + getCountryLabel(s.country) + '</span>' + (s.young ? ' <span class="country-tag" style="background:rgba(212,175,55,0.25)">' + t('young') + '</span>' : '');
                 el.onclick = () => {
                     window.player.currentSheikh = s;
                     
