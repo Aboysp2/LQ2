@@ -1823,32 +1823,74 @@
                 sel.value = String(sid);
             }
             const p = String(n).padStart(3, '0');
-            // مصادر متعددة - img لا يحتاج CORS للعرض
+            // مصادر صور صفحات المصحف (مصحف المدينة / مجمع الملك فهد عبر Quran.com images)
             const sources = [
-                'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg',
+                'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png',
+                'https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/' + p + '.png',
+                'https://govarjabbar.github.io/Quran-PNG/' + p + '.png',
                 'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + p + '.svg',
-                'https://quran.ksu.edu.sa/png_big/' + n + '.png'
+                'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg'
             ];
             content.innerHTML = '<div class="mushaf-loading">' + t('loadingPage') + '</div>';
             let si = 0;
             const tryLoad = () => {
                 if (si >= sources.length) {
-                    content.innerHTML = '<div style="text-align:center;padding:20px"><p style="color:#c0392b;margin-bottom:12px">' + t('pageLoadFail') + '</p>' +
-                        '<a href="https://quran.ksu.edu.sa/m.php?l=ar#aya=1_1" target="_blank" rel="noopener" style="color:var(--primary);font-weight:bold">' + t('navMushaf') + ' ↗</a></div>';
+                    // احتياطي: نص عثماني من api.quran.com
+                    loadMushafTextPage(n, content);
                     return;
                 }
                 const url = sources[si++];
                 const img = document.createElement('img');
                 img.className = 'mushaf-page-img';
-                img.alt = 'page ' + n;
+                img.alt = 'Mushaf page ' + n;
                 img.draggable = false;
-                const timer = setTimeout(() => { img.onerror && img.onerror(); }, 12000);
-                img.onload = () => { clearTimeout(timer); content.innerHTML = ''; content.appendChild(img); };
-                img.onerror = () => { clearTimeout(timer); tryLoad(); };
+                let done = false;
+                const timer = setTimeout(() => {
+                    if (!done) { done = true; tryLoad(); }
+                }, 10000);
+                img.onload = () => {
+                    if (done) return;
+                    done = true;
+                    clearTimeout(timer);
+                    content.innerHTML = '';
+                    content.appendChild(img);
+                };
+                img.onerror = () => {
+                    if (done) return;
+                    done = true;
+                    clearTimeout(timer);
+                    tryLoad();
+                };
                 img.src = url;
             };
             tryLoad();
         }
+
+        async function loadMushafTextPage(n, content) {
+            try {
+                const res = await fetch('https://api.quran.com/api/v4/quran/verses/uthmani?page_number=' + n);
+                if (!res.ok) throw new Error('api');
+                const data = await res.json();
+                const verses = data.verses || [];
+                if (!verses.length) throw new Error('empty');
+                let html = '<div class="mushaf-text-page">';
+                verses.forEach(v => {
+                    const num = (v.verse_key || '').split(':')[1] || '';
+                    html += '<span class="mushaf-ayah">' + (v.text_uthmani || '') +
+                        '<span class="mushaf-num">' + num + '</span></span> ';
+                });
+                html += '</div>';
+                content.innerHTML = html;
+            } catch (e) {
+                content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">' + t('pageLoadFail') + '</p>';
+            }
+        }
+
+        function mushafPageUrl(n) {
+            const p = String(n).padStart(3, '0');
+            return 'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png';
+        }
+
 
         function mushafTurn(dir) {
             const n = (mushafState.pageNum || 1) + dir;
