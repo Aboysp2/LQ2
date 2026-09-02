@@ -325,6 +325,35 @@
             .site-title { font-size: 1.35em; }
             .sheikhs-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
         }
+    
+        .share-tip-bar {
+            background: linear-gradient(90deg, #f5e6b8, #fff8e1, #f5e6b8);
+            color: #1a5e3a;
+            text-align: center;
+            padding: 12px 16px;
+            font-size: 0.95em;
+            font-weight: 700;
+            border-top: 2px solid #d4af37;
+            border-bottom: 2px solid #d4af37;
+            letter-spacing: 0.3px;
+            line-height: 1.5;
+        }
+        body.dark-mode .share-tip-bar {
+            background: linear-gradient(90deg, #2a2a3e, #1e1e2e, #2a2a3e);
+            color: #d4af37;
+            border-color: #d4af37;
+        }
+        .mushaf-page-img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            background: #faf6e9;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+        }
+    
     </style>
 </head>
 <body>
@@ -474,6 +503,11 @@
     <footer class="main-footer sadaqa-bar">
         <p data-i18n="sadaqa" style="font-size:1.3em;font-weight:800;letter-spacing:0.5px;margin:0">صدقة جارية لكل من ينشرها</p>
     </footer>
+
+    <div class="share-tip-bar" id="shareTipBar">
+        لا تنسى نشر التطبيق فالدال على الخير كفاعله
+    </div>
+
 
     <div id="toast" class="toast"></div>
 
@@ -1619,13 +1653,19 @@
 
         
         function openMushaf() {
-            showSection('mushaf');
-            // start at Al-Fatiha page 1 if not set
+            if (typeof showSection === 'function') showSection('mushaf');
+            else {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                const btn = document.querySelector('.nav-btn[data-section="mushaf"]');
+                if (btn) btn.classList.add('active');
+                const sec = document.getElementById('mushaf');
+                if (sec) sec.classList.add('active');
+            }
             if (!mushafState.pageNum) {
                 mushafState.pageNum = 1;
                 mushafState.surahId = 1;
             }
-            renderMushafPageImage();
             const sel = document.getElementById('mushafSurahSelect');
             if (sel && !sel.options.length) {
                 for (let i = 1; i <= 114; i++) {
@@ -1642,12 +1682,12 @@
                 };
             }
             if (sel) sel.value = String(mushafState.surahId || 1);
+            renderMushafPageImage();
         }
 
         function mushafPageUrl(n) {
-            const p = String(n).padStart(3, '0');
-            // مصحف المدينة (مجمع الملك فهد) SVG من mp3quran
-            return 'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg';
+            // مصحف المدينة - جامعة الملك سعود (نفس quran.ksu.edu.sa)
+            return 'https://quran.ksu.edu.sa/png_big/' + n + '.png';
         }
 
         function renderMushafPageImage() {
@@ -1661,36 +1701,41 @@
             if (status) status.textContent = 'صفحة ' + n + ' / ' + TOTAL_MUSHAF_PAGES;
             const pn = document.getElementById('mushafPageNum');
             if (pn) pn.textContent = String(n);
+            // تقدير السورة من رقم الصفحة
+            let sid = 1;
+            for (let i = 1; i <= 114; i++) {
+                if ((SURAH_START_PAGE[i] || 1) <= n) sid = i;
+            }
+            mushafState.surahId = sid;
             const sl = document.getElementById('mushafSurahLabel');
-            if (sl && mushafState.surahId) sl.textContent = getSurahDisplay(mushafState.surahId);
+            if (sl) sl.textContent = getSurahDisplay(sid);
+            const sel = document.getElementById('mushafSurahSelect');
+            if (sel) sel.value = String(sid);
             content.innerHTML = '<div class="mushaf-loading">جاري تحميل صفحة المصحف...</div>';
-            const img = new Image();
+            const img = document.createElement('img');
             img.className = 'mushaf-page-img';
             img.alt = 'مصحف المدينة - صفحة ' + n;
-            img.onload = () => {
-                content.innerHTML = '';
-                content.appendChild(img);
-            };
-            img.onerror = () => {
-                // fallback jsdelivr SVG
-                const p = String(n).padStart(3, '0');
-                img.onerror = () => {
-                    content.innerHTML = '<p style="text-align:center;padding:20px">تعذر تحميل الصفحة. تحقق من الاتصال.</p>';
-                };
-                img.src = 'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + p + '.svg';
-            };
-            img.src = mushafPageUrl(n);
-            // update surah select approx
-            const sel = document.getElementById('mushafSurahSelect');
-            if (sel) {
-                // find surah whose start page <= n
-                let sid = 1;
-                for (let i = 1; i <= 114; i++) {
-                    if ((SURAH_START_PAGE[i] || 1) <= n) sid = i;
+            img.decoding = 'async';
+            img.loading = 'eager';
+            const sources = [
+                'https://quran.ksu.edu.sa/png_big/' + n + '.png',
+                'https://www.mp3quran.net/api/quran_pages_svg/' + String(n).padStart(3,'0') + '.svg',
+                'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + String(n).padStart(3,'0') + '.svg'
+            ];
+            let si = 0;
+            const tryNext = () => {
+                if (si >= sources.length) {
+                    content.innerHTML = '<p style="text-align:center;padding:24px;line-height:1.8">تعذر تحميل الصفحة.<br>تحقق من الاتصال بالإنترنت ثم أعد المحاولة.</p>';
+                    return;
                 }
-                mushafState.surahId = sid;
-                sel.value = String(sid);
-            }
+                img.onload = () => {
+                    content.innerHTML = '';
+                    content.appendChild(img);
+                };
+                img.onerror = () => { si++; tryNext(); };
+                img.src = sources[si];
+            };
+            tryNext();
         }
 
         function mushafTurn(dir) {
