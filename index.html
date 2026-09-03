@@ -382,6 +382,33 @@
         }
         .saved-group-body { background: var(--card); padding: 6px 8px 10px; }
         .saved-group-body .surah-item { margin: 6px 0; }
+    
+        .mushaf-verse-block {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(201, 162, 39, 0.25);
+        }
+        .mushaf-verse-block:last-child { border-bottom: none; }
+        .mushaf-ayah-ar {
+            font-family: "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+            font-size: 1.5em;
+            line-height: 2.3;
+            text-align: center;
+            color: #1a1208;
+            direction: rtl;
+            margin-bottom: 8px;
+        }
+        body.dark-mode .mushaf-ayah-ar { color: #f5ecd0; }
+        .mushaf-ayah-tr {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.95em;
+            line-height: 1.65;
+            text-align: center;
+            color: #333;
+            opacity: 0.92;
+            padding: 0 6px;
+        }
+        body.dark-mode .mushaf-ayah-tr { color: #d0d0d0; }
     </style>
 </head>
 <body>
@@ -1170,6 +1197,28 @@
         const RTL_LANGS = ['ar', 'ur', 'ku'];
         let currentLang = localStorage.getItem('appLang') || 'ar';
 
+        
+        (function(){
+            const extraKeys = {
+                delete: { ar:"حذف", en:"Delete", fr:"Supprimer", ha:"Share", so:"Tirtir", ur:"حذف کریں", es:"Eliminar", it:"Elimina", tr:"Sil", hi:"हटाएँ", de:"Löschen", id:"Hapus", ms:"Padam", ku:"سڕینەوە", pt:"Excluir" },
+                settingsTitle: { ar:"⚙ الإعدادات", en:"⚙ Settings", fr:"⚙ Paramètres", ha:"⚙ Saiti", so:"⚙ Settings", ur:"⚙ ترتیبات", es:"⚙ Ajustes", it:"⚙ Impostazioni", tr:"⚙ Ayarlar", hi:"⚙ सेटिंग्स", de:"⚙ Einstellungen", id:"⚙ Pengaturan", ms:"⚙ Tetapan", ku:"⚙ ڕێکخستن", pt:"⚙ Configurações" },
+                darkMode: { ar:"الوضع الليلي", en:"Dark mode", fr:"Mode sombre", ha:"Yanayi mai duhu", so:"Habeyn", ur:"ڈارک موڈ", es:"Modo oscuro", it:"Modalità scura", tr:"Karanlık mod", hi:"डार्क मोड", de:"Dunkelmodus", id:"Mode gelap", ms:"Mod gelap", ku:"دۆخی تاریک", pt:"Modo escuro" },
+                language: { ar:"اللغة", en:"Language", fr:"Langue", ha:"Harshe", so:"Luuqad", ur:"زبان", es:"Idioma", it:"Lingua", tr:"Dil", hi:"भाषा", de:"Sprache", id:"Bahasa", ms:"Bahasa", ku:"زمان", pt:"Idioma" },
+                clearCache: { ar:"مسح جميع التلاوات المحفوظة", en:"Clear all saved recitations", fr:"Effacer toutes les récitations", ha:"Share duk wanda aka ajiye", so:"Tirtir dhammaan", ur:"تمام محفوظ تلاوتیں مٹائیں", es:"Borrar todas", it:"Cancella tutto", tr:"Tümünü temizle", hi:"सभी सहेजी तिलावत हटाएँ", de:"Alle löschen", id:"Hapus semua", ms:"Padam semua", ku:"هەموو بسڕەوە", pt:"Limpar tudo" },
+                clearAll: { ar:"🗑 مسح الكل", en:"🗑 Clear all", fr:"🗑 Tout effacer", ha:"🗑 Share duka", so:"🗑 Tirtir", ur:"🗑 سب مٹائیں", es:"🗑 Borrar todo", it:"🗑 Cancella", tr:"🗑 Temizle", hi:"🗑 सब साफ़", de:"🗑 Alles löschen", id:"🗑 Hapus semua", ms:"🗑 Padam semua", ku:"🗑 پاککردن", pt:"🗑 Limpar" },
+                sadaqa: { ar:"صدقة جارية لكل من ينشرها", en:"Ongoing charity for all who share it", fr:"Charité continue pour ceux qui la partagent", ha:"Sadaka mai ci gaba ga duk wanda ya yada", so:"Sadaqad joogto ah", ur:"جاری صدقہ ہر شیئر کرنے والے کے لیے", es:"Caridad continua", it:"Carità continua", tr:"Paylaşanlar için sürekli sadaka", hi:"साझा करने वालों के लिए सदका", de:"Fortlaufende Wohltätigkeit", id:"Sedekah jariyah", ms:"Sedekah jariah", ku:"سەدەقەی بەردەوام", pt:"Caridade contínua" },
+                shareTip: { ar:"لا تنسى نشر التطبيق فالدال على الخير كفاعله", en:"Do not forget to share the app — guiding to good is like doing it", fr:"N'oubliez pas de partager — guider vers le bien c'est comme le faire", ha:"Kada ka manta ka yada app — mai nuna hanya ga alheri kamar mai aikatawa ne", so:"Ha iloobin in aad wadaagto", ur:"ایپ شیئر کرنا نہ بھولیں", es:"No olvides compartir la app", it:"Non dimenticare di condividere", tr:"Uygulamayı paylaşmayı unutma", hi:"ऐप साझा करना न भूलें", de:"App teilen nicht vergessen", id:"Jangan lupa bagikan aplikasi", ms:"Jangan lupa kongsi aplikasi", ku:"لەبیر مەکە بەشی بکەیت", pt:"Não esqueça de compartilhar" },
+                appInfo: { ar:"معلومات التطبيق", en:"App info", fr:"Infos", ha:"Bayanan app", so:"Macluumaadka", ur:"ایپ کی معلومات", es:"Info", it:"Info", tr:"Uygulama bilgisi", hi:"ऐप जानकारी", de:"App-Info", id:"Info aplikasi", ms:"Maklumat app", ku:"زانیاری ئەپ", pt:"Info do app" },
+                chooseSurah: { ar:"اختر سورة للاستماع", en:"Choose a Surah to listen", fr:"Choisissez une sourate", ha:"Zaɓi Sura don saurare", so:"Dooro Suurad", ur:"سننے کے لیے سورہ منتخب کریں", es:"Elige una sura", it:"Scegli una sura", tr:"Dinlemek için sure seç", hi:"सुनने के लिए सूरह चुनें", de:"Sure zum Anhören wählen", id:"Pilih surah", ms:"Pilih surah", ku:"سورەت هەڵبژێرە", pt:"Escolha uma sura" }
+            };
+            Object.keys(extraKeys).forEach(k => {
+                Object.keys(extraKeys[k]).forEach(lang => {
+                    if (!I18N[lang]) I18N[lang] = {};
+                    I18N[lang][k] = extraKeys[k][lang];
+                });
+            });
+        })();
+
         function t(key) {
             const pack = I18N[currentLang] || I18N.ar;
             return pack[key] || I18N.ar[key] || key;
@@ -1198,6 +1247,7 @@
                 const sheikhFilter = (document.getElementById('sheikhSearch') || {}).value || '';
                 const surahFilter = (document.getElementById('surahSearch') || {}).value || '';
                 renderSheikhs(sheikhFilter);
+                try { const ms=document.getElementById('mushafSurahSelect'); if(ms) ms.innerHTML=''; if(document.getElementById('mushaf')?.classList.contains('active')) renderMushafPageImage(); } catch(e){}
                 if (typeof renderMushafPageImage === 'function' && document.getElementById('mushaf')?.classList.contains('active')) { try { const sel = document.getElementById('mushafSurahSelect'); if (sel) sel.innerHTML=''; renderMushafPageImage(); } catch(e){} }
                 renderSurahs(surahFilter);
                 
@@ -1402,23 +1452,52 @@
                 const keys = await cache.keys();
                 if (!keys.length) {
                     list.innerHTML = '<p style="opacity:0.6">' + t('noSaved') + '</p>';
+                    updateSavedCount();
                     return;
                 }
+                // تجميع بدون تكرار: مفتاح = server + surahId
                 const groups = {};
+                const seen = new Set();
                 keys.forEach(req => {
                     const url = req.url;
                     const m = url.match(/(\d{3})\.mp3$/);
                     const surahId = m ? parseInt(m[1], 10) : 0;
+                    if (!surahId) return;
                     let sheikh = null;
                     for (const sh of QURAN_DATA.sheikhs) {
-                        const pathPart = sh.server.replace(/https?:\/\/[^/]+/, '');
+                        const pathPart = (sh.server || '').replace(/https?:\/\/[^/]+/, '');
                         if (pathPart && url.indexOf(pathPart) >= 0) { sheikh = sh; break; }
                         if (url.startsWith(sh.server)) { sheikh = sh; break; }
                     }
-                    const key = sheikh ? sheikh.server : 'unknown';
-                    if (!groups[key]) groups[key] = { sheikh: sheikh, items: [] };
-                    groups[key].items.push({ url: url, surahId: surahId });
+                    const gkey = (sheikh ? sheikh.server : 'unknown');
+                    const uniq = gkey + '|' + surahId;
+                    if (seen.has(uniq)) return; // منع التكرار
+                    seen.add(uniq);
+                    if (!groups[gkey]) groups[gkey] = { sheikh: sheikh, items: [] };
+                    groups[gkey].items.push({ url: url, surahId: surahId });
                 });
+                // تنظيف التكرارات القديمة من الكاش
+                const keepUrls = new Set();
+                Object.values(groups).forEach(g => g.items.forEach(it => keepUrls.add(it.url)));
+                for (const req of keys) {
+                    const m = req.url.match(/(\d{3})\.mp3$/);
+                    if (!m) continue;
+                    if (!keepUrls.has(req.url)) {
+                        // قد يكون تكراراً لنفس السورة برابط مختلف قليلاً
+                        const surahId = parseInt(m[1], 10);
+                        let sheikh = null;
+                        for (const sh of QURAN_DATA.sheikhs) {
+                            if (req.url.indexOf((sh.server||'').replace(/https?:\/\/[^/]+/, '')) >= 0 || req.url.startsWith(sh.server)) {
+                                sheikh = sh; break;
+                            }
+                        }
+                        const gkey = sheikh ? sheikh.server : 'unknown';
+                        const uniq = gkey + '|' + surahId;
+                        if (seen.has(uniq) && !keepUrls.has(req.url)) {
+                            try { await cache.delete(req); } catch(e) {}
+                        }
+                    }
+                }
                 Object.keys(groups).forEach(key => {
                     const g = groups[key];
                     const wrap = document.createElement('div');
@@ -1433,12 +1512,37 @@
                     body.style.display = 'none';
                     g.items.sort((a,b) => a.surahId - b.surahId).forEach(item => {
                         const el = document.createElement('div');
-                        el.className = 'surah-item';
-                        el.innerHTML = '<div class="surah-info"><div class="surah-num">' + (item.surahId || '?') + '</div><div><strong>' + getSurahName(item.surahId) + '</strong></div></div>';
-                        el.onclick = (e) => {
-                            e.stopPropagation();
+                        el.className = 'surah-item saved-item';
+                        el.innerHTML =
+                            '<div class="surah-info" style="flex:1;cursor:pointer">' +
+                            '<div class="surah-num">' + item.surahId + '</div>' +
+                            '<div><strong>' + getSurahName(item.surahId) + '</strong></div></div>' +
+                            '<button type="button" class="del-saved-btn" title="' + (t('delete') || 'حذف') + '">🗑</button>';
+                        el.querySelector('.surah-info').onclick = () => {
                             if (g.sheikh) window.player.currentSheikh = g.sheikh;
                             if (item.surahId) window.player.playSurah(item.surahId);
+                        };
+                        el.querySelector('.del-saved-btn').onclick = async (e) => {
+                            e.stopPropagation();
+                            try {
+                                const cache2 = await caches.open('quran-audio-v1');
+                                // احذف كل نسخ هذه السورة لنفس الشيخ
+                                const all = await cache2.keys();
+                                for (const r of all) {
+                                    const mm = r.url.match(/(\d{3})\.mp3$/);
+                                    if (!mm || parseInt(mm[1],10) !== item.surahId) continue;
+                                    if (g.sheikh && (r.url.indexOf(g.sheikh.server) >= 0 || r.url.startsWith(g.sheikh.server))) {
+                                        await cache2.delete(r);
+                                    } else if (!g.sheikh) {
+                                        await cache2.delete(r);
+                                    }
+                                }
+                                showToast(t('saveDeleted'));
+                                await renderSavedSurahs();
+                                await updateSavedCount();
+                            } catch (err) {
+                                showToast(t('clearError') || 'Error');
+                            }
                         };
                         body.appendChild(el);
                     });
@@ -1451,6 +1555,7 @@
                     wrap.appendChild(body);
                     list.appendChild(wrap);
                 });
+                updateSavedCount();
             } catch (e) {
                 list.innerHTML = '<p style="opacity:0.6">' + t('noSaved') + '</p>';
             }
@@ -1770,11 +1875,7 @@
             renderMushafPageImage();
         }
 
-        function mushafPageUrl(n) {
-            const p = String(n).padStart(3, '0');
-            // مصادر تدعم CORS (تعمل من GitHub Pages)
-            return 'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg';
-        }
+        
 
         function renderMushafPageImage() {
             const content = document.getElementById('mushafContent');
@@ -1822,70 +1923,153 @@
                 }
                 sel.value = String(sid);
             }
-            const p = String(n).padStart(3, '0');
-            // مصادر صور صفحات المصحف (مصحف المدينة / مجمع الملك فهد عبر Quran.com images)
-            const sources = [
-                'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png',
-                'https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/' + p + '.png',
-                'https://govarjabbar.github.io/Quran-PNG/' + p + '.png',
-                'https://cdn.jsdelivr.net/gh/quranpedia/quran-svg@main/mushafs/hafs/kfqc/svg/' + p + '.svg',
-                'https://www.mp3quran.net/api/quran_pages_svg/' + p + '.svg'
-            ];
             content.innerHTML = '<div class="mushaf-loading">' + t('loadingPage') + '</div>';
-            let si = 0;
-            const tryLoad = () => {
-                if (si >= sources.length) {
-                    // احتياطي: نص عثماني من api.quran.com
-                    loadMushafTextPage(n, content);
-                    return;
-                }
-                const url = sources[si++];
-                const img = document.createElement('img');
-                img.className = 'mushaf-page-img';
-                img.alt = 'Mushaf page ' + n;
-                img.draggable = false;
-                let done = false;
-                const timer = setTimeout(() => {
-                    if (!done) { done = true; tryLoad(); }
-                }, 10000);
-                img.onload = () => {
-                    if (done) return;
-                    done = true;
-                    clearTimeout(timer);
-                    content.innerHTML = '';
-                    content.appendChild(img);
+            // أولاً: نص عثماني من api.quran.com (موثوق + CORS) مع تخزين محلي
+            loadMushafTextPage(n, content).then(ok => {
+                if (ok) return;
+                // ثانياً: صورة
+                const p = String(n).padStart(3, '0');
+                const sources = [
+                    'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png',
+                    'https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/' + p + '.png'
+                ];
+                let si = 0;
+                const tryImg = () => {
+                    if (si >= sources.length) {
+                        content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">' + t('pageLoadFail') + '</p>';
+                        return;
+                    }
+                    const img = document.createElement('img');
+                    img.className = 'mushaf-page-img';
+                    img.alt = 'page ' + n;
+                    img.onload = () => { content.innerHTML = ''; content.appendChild(img); };
+                    img.onerror = () => { si++; tryImg(); };
+                    img.src = sources[si++];
                 };
-                img.onerror = () => {
-                    if (done) return;
-                    done = true;
-                    clearTimeout(timer);
-                    tryLoad();
-                };
-                img.src = url;
-            };
-            tryLoad();
+                tryImg();
+            });
         }
 
+        
+        // ترجمات api.quran.com حسب لغة التطبيق
+        const TRANSLATION_IDS = {
+            ar: null,
+            en: 20,   // Sahih International
+            fr: 31,   // Hamidullah
+            es: 83,   // Isa Garcia
+            it: 153,  // Hamza Roberto Piccardo
+            tr: 77,   // Diyanet
+            de: 27,   // Bubenheim
+            pt: 103,  // Helmi Nasr
+            ur: 54,   // Junagarhi
+            hi: 122,  // Azizul Haque
+            id: 33,   // Indonesian Ministry
+            ms: 39,   // Basmeih
+            ha: 32,   // Abubakar Gumi
+            so: 46,   // Mahmud Muhammad Abduh
+            ku: 81    // Burhan Muhammad-Amin
+        };
+
+        function stripTranslationHtml(s) {
+            return String(s || '')
+                .replace(/<sup[^>]*>.*?<\/sup>/gi, '')
+                .replace(/<[^>]+>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .trim();
+        }
+
+
         async function loadMushafTextPage(n, content) {
+            const lang = currentLang || 'ar';
+            const tid = TRANSLATION_IDS.hasOwnProperty(lang) ? TRANSLATION_IDS[lang] : 20;
+            const cacheKey = 'mushaf_p_' + n + '_' + (tid || 'ar');
             try {
-                const res = await fetch('https://api.quran.com/api/v4/quran/verses/uthmani?page_number=' + n);
-                if (!res.ok) throw new Error('api');
-                const data = await res.json();
-                const verses = data.verses || [];
-                if (!verses.length) throw new Error('empty');
-                let html = '<div class="mushaf-text-page">';
+                let verses = null;
+                try {
+                    const cached = localStorage.getItem(cacheKey);
+                    if (cached) verses = JSON.parse(cached);
+                } catch (e) {}
+                if (!verses) {
+                    let url;
+                    if (!tid) {
+                        url = 'https://api.quran.com/api/v4/quran/verses/uthmani?page_number=' + n;
+                    } else {
+                        url = 'https://api.quran.com/api/v4/verses/by_page/' + n +
+                            '?translations=' + tid + '&fields=text_uthmani&per_page=50&words=false';
+                    }
+                    const res = await fetch(url);
+                    if (!res.ok) return false;
+                    const data = await res.json();
+                    verses = data.verses || [];
+                    if (!verses.length) return false;
+                    try { localStorage.setItem(cacheKey, JSON.stringify(verses)); } catch (e) {}
+                    try {
+                        const c = await caches.open('mushaf-text-v1');
+                        await c.put('https://mushaf.local/page/' + n + '/' + (tid || 'ar'),
+                            new Response(JSON.stringify(verses), { headers: { 'Content-Type': 'application/json' } }));
+                    } catch (e) {}
+                }
+                let html = '<div class="mushaf-text-page"><div class="mushaf-text-inner">';
                 verses.forEach(v => {
-                    const num = (v.verse_key || '').split(':')[1] || '';
-                    html += '<span class="mushaf-ayah">' + (v.text_uthmani || '') +
-                        '<span class="mushaf-num">' + num + '</span></span> ';
+                    const num = (v.verse_key || '').split(':')[1] || String(v.verse_number || '');
+                    const ar = v.text_uthmani || (v.text_uthmani === undefined ? '' : v.text_uthmani);
+                    // بعض الاستجابات تضع النص في text_uthmani عبر fields
+                    const arabic = ar || v.text_uthmani || '';
+                    html += '<div class="mushaf-verse-block">';
+                    html += '<div class="mushaf-ayah-ar">' + arabic +
+                        ' <span class="mushaf-num">' + toArabicIndic(num) + '</span></div>';
+                    if (tid) {
+                        const tr = (v.translations && v.translations[0]) ? stripTranslationHtml(v.translations[0].text) : '';
+                        if (tr) {
+                            html += '<div class="mushaf-ayah-tr" dir="' + (['ar','ur','ku'].includes(lang) ? 'rtl' : 'ltr') + '">' + tr + '</div>';
+                        }
+                    }
+                    html += '</div>';
                 });
-                html += '</div>';
+                html += '</div><div class="mushaf-text-footer">' + n + ' / 604</div></div>';
                 content.innerHTML = html;
+                return true;
             } catch (e) {
-                content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">' + t('pageLoadFail') + '</p>';
+                try {
+                    const c = await caches.open('mushaf-text-v1');
+                    const r = await c.match('https://mushaf.local/page/' + n + '/' + (tid || 'ar'));
+                    if (r) {
+                        const verses = await r.json();
+                        let html = '<div class="mushaf-text-page"><div class="mushaf-text-inner">';
+                        verses.forEach(v => {
+                            const num = (v.verse_key || '').split(':')[1] || '';
+                            const arabic = v.text_uthmani || '';
+                            html += '<div class="mushaf-verse-block">';
+                            html += '<div class="mushaf-ayah-ar">' + arabic +
+                                ' <span class="mushaf-num">' + toArabicIndic(num) + '</span></div>';
+                            if (tid && v.translations && v.translations[0]) {
+                                const tr = stripTranslationHtml(v.translations[0].text);
+                                if (tr) html += '<div class="mushaf-ayah-tr">' + tr + '</div>';
+                            }
+                            html += '</div>';
+                        });
+                        html += '</div><div class="mushaf-text-footer">' + n + ' / 604</div></div>';
+                        content.innerHTML = html;
+                        return true;
+                    }
+                } catch (e2) {}
+                return false;
             }
         }
 
+        function toArabicIndic(num) {
+            const map = '٠١٢٣٤٥٦٧٨٩';
+            return String(num).replace(/\d/g, d => map[d] || d);
+        }
+
+        
+
+
+        
         function mushafPageUrl(n) {
             const p = String(n).padStart(3, '0');
             return 'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png';
@@ -2029,13 +2213,27 @@
         }
 
         async function updateSavedCount() {
-            if (!('caches' in window)) return;
+            const el = document.getElementById('savedCount');
+            if (!el) return;
+            if (!('caches' in window)) { el.textContent = '0'; return; }
             try {
                 const cache = await caches.open('quran-audio-v1');
                 const keys = await cache.keys();
-                document.getElementById('savedCount').textContent = keys.length;
+                const seen = new Set();
+                keys.forEach(req => {
+                    const m = req.url.match(/(\d{3})\.mp3$/);
+                    if (!m) return;
+                    let sheikhKey = 'x';
+                    for (const sh of QURAN_DATA.sheikhs) {
+                        if (req.url.startsWith(sh.server) || req.url.indexOf((sh.server||'').replace(/https?:\/\/[^/]+/, '')) >= 0) {
+                            sheikhKey = sh.server; break;
+                        }
+                    }
+                    seen.add(sheikhKey + '|' + m[1]);
+                });
+                el.textContent = String(seen.size);
             } catch (e) {
-                document.getElementById('savedCount').textContent = '0';
+                el.textContent = '0';
             }
         }
 
@@ -2082,42 +2280,68 @@
         async function toggleSaveSurah(btn, surahId) {
             const url = btn.dataset.url;
             if (!url) return;
-
             if (!('caches' in window)) {
                 showToast(t('noCache'));
                 return;
             }
-
             try {
                 const cache = await caches.open('quran-audio-v1');
-                const isSaved = await cache.match(url);
+                // تحقق من وجود أي نسخة لنفس الشيخ+السورة
+                const pad = String(surahId).padStart(3, '0');
+                const keys = await cache.keys();
+                let existing = null;
+                for (const r of keys) {
+                    if (r.url.indexOf(pad + '.mp3') >= 0) {
+                        // نفس مسار الشيخ إن أمكن
+                        if (url && r.url.replace(/https?:/, '') === url.replace(/https?:/, '')) {
+                            existing = r; break;
+                        }
+                        if (window.player && window.player.currentSheikh) {
+                            const srv = window.player.currentSheikh.server || '';
+                            if (srv && r.url.indexOf(srv.replace(/https?:\/\/[^/]+/, '')) >= 0) {
+                                existing = r; break;
+                            }
+                        }
+                    }
+                }
+                if (!existing) existing = await cache.match(url);
 
-                if (isSaved) {
+                if (existing) {
+                    // حذف كل التكرارات
+                    for (const r of keys) {
+                        if (r.url.indexOf(pad + '.mp3') >= 0) {
+                            if (window.player && window.player.currentSheikh) {
+                                const srv = window.player.currentSheikh.server || '';
+                                if (srv && (r.url.startsWith(srv) || r.url.indexOf(srv.replace(/https?:\/\/[^/]+/, '')) >= 0)) {
+                                    await cache.delete(r);
+                                }
+                            } else if (r.url === url) {
+                                await cache.delete(r);
+                            }
+                        }
+                    }
                     await cache.delete(url);
                     btn.className = 'save-btn';
                     btn.innerHTML = t('save');
                     showToast(t('saveDeleted'));
                 } else {
-                    btn.className = 'save-btn loading';
                     btn.innerHTML = t('saving');
                     btn.disabled = true;
-
-                    const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
-                    if (!response.ok) throw new Error('HTTP ' + response.status);
-
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('fetch');
                     await cache.put(url, response.clone());
                     btn.className = 'save-btn saved';
                     btn.innerHTML = t('saved');
                     showToast(t('saveOk'));
                 }
+                btn.disabled = false;
+                await updateSavedCount();
+                const panel = document.getElementById('savedSurahsPanel');
+                if (panel && panel.style.display !== 'none') await renderSavedSurahs();
             } catch (e) {
-                console.error(e);
-                btn.className = 'save-btn';
+                btn.disabled = false;
                 btn.innerHTML = t('save');
                 showToast(t('saveFail'));
-            } finally {
-                btn.disabled = false;
-                updateSavedCount();
             }
         }
 
