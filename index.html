@@ -1718,6 +1718,10 @@
         const AYAHS_PER_PAGE = 12;
         let mushafState = { surahId: 1, page: 0, ayahs: [], totalPages: 1 , pageNum: 1};
 
+        const TOTAL_MUSHAF_PAGES = 604;
+        const SURAH_START_PAGE = {1: 1, 2: 2, 3: 50, 4: 77, 5: 106, 6: 128, 7: 151, 8: 177, 9: 187, 10: 208, 11: 221, 12: 235, 13: 249, 14: 255, 15: 262, 16: 267, 17: 282, 18: 293, 19: 305, 20: 312, 21: 322, 22: 332, 23: 342, 24: 350, 25: 359, 26: 367, 27: 377, 28: 385, 29: 396, 30: 404, 31: 411, 32: 415, 33: 418, 34: 428, 35: 434, 36: 440, 37: 446, 38: 453, 39: 458, 40: 467, 41: 477, 42: 483, 43: 489, 44: 496, 45: 499, 46: 502, 47: 507, 48: 511, 49: 515, 50: 518, 51: 520, 52: 523, 53: 526, 54: 528, 55: 531, 56: 534, 57: 537, 58: 542, 59: 545, 60: 549, 61: 551, 62: 553, 63: 554, 64: 556, 65: 558, 66: 560, 67: 562, 68: 564, 69: 566, 70: 568, 71: 570, 72: 572, 73: 574, 74: 575, 75: 577, 76: 578, 77: 580, 78: 582, 79: 583, 80: 585, 81: 586, 82: 587, 83: 587, 84: 589, 85: 590, 86: 591, 87: 591, 88: 592, 89: 593, 90: 594, 91: 595, 92: 595, 93: 596, 94: 596, 95: 597, 96: 597, 97: 598, 98: 598, 99: 599, 100: 599, 101: 600, 102: 600, 103: 601, 104: 601, 105: 601, 106: 602, 107: 602, 108: 602, 109: 603, 110: 603, 111: 603, 112: 604, 113: 604, 114: 604};
+
+
         async function initMushafSelect() {
             const sel = document.getElementById('mushafSurahSelect');
             if (!sel) return;
@@ -1773,7 +1777,13 @@
 
         function renderMushafPage() { renderMushafPageImage(); }
 
-        function mushafTurn(dir) { const n = (mushafState.pageNum || 1) + dir; if (n < 1 || n > (typeof TOTAL_MUSHAF_PAGES!=="undefined"?TOTAL_MUSHAF_PAGES:604)) return; mushafState.pageNum = n; renderMushafPageImage(); }
+        function mushafTurn(dir) {
+            var maxPages = (typeof TOTAL_MUSHAF_PAGES !== 'undefined') ? TOTAL_MUSHAF_PAGES : 604;
+            var n = (mushafState.pageNum || 1) + dir;
+            if (n < 1 || n > maxPages) return;
+            mushafState.pageNum = n;
+            renderMushafPageImage();
+        }
 
         
 
@@ -1843,62 +1853,62 @@
 
         
         function openMushaf() {
-            if (typeof showSection === 'function') showSection('mushaf');
-            else {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                const btn = document.querySelector('.nav-btn[data-section="mushaf"]');
-                if (btn) btn.classList.add('active');
-                const sec = document.getElementById('mushaf');
-                if (sec) sec.classList.add('active');
-            }
-            if (!mushafState.pageNum) {
-                mushafState.pageNum = 1;
-                mushafState.surahId = 1;
-            }
-            const sel = document.getElementById('mushafSurahSelect');
-            if (sel && !sel.options.length) {
-                for (let i = 1; i <= 114; i++) {
-                    const o = document.createElement('option');
+            document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            var btn = document.querySelector('.nav-btn[data-section="mushaf"]');
+            if (btn) btn.classList.add('active');
+            var sec = document.getElementById('mushaf');
+            if (sec) sec.classList.add('active');
+            if (!mushafState.pageNum) mushafState.pageNum = 1;
+            if (!mushafState.surahId) mushafState.surahId = 1;
+            var sel = document.getElementById('mushafSurahSelect');
+            var starts = (typeof SURAH_START_PAGE !== 'undefined') ? SURAH_START_PAGE : {};
+            if (sel) {
+                sel.innerHTML = '';
+                for (var i = 1; i <= 114; i++) {
+                    var o = document.createElement('option');
                     o.value = i;
-                    o.textContent = i + '. ' + getSurahDisplay(i);
+                    o.textContent = i + ' - ' + ((typeof getSurahName === 'function') ? getSurahName(i) : i);
                     sel.appendChild(o);
                 }
-                sel.onchange = () => {
-                    const id = parseInt(sel.value, 10);
+                sel.value = String(mushafState.surahId || 1);
+                sel.onchange = function() {
+                    var id = parseInt(sel.value, 10);
                     mushafState.surahId = id;
-                    mushafState.pageNum = SURAH_START_PAGE[id] || 1;
+                    mushafState.pageNum = starts[id] || 1;
                     renderMushafPageImage();
                 };
             }
-            if (sel) sel.value = String(mushafState.surahId || 1);
             renderMushafPageImage();
         }
 
         
 
         function renderMushafPageImage() {
+            try {
             const content = document.getElementById('mushafContent');
             const status = document.getElementById('mushafStatus');
             if (!content) return;
+            const maxPages = (typeof TOTAL_MUSHAF_PAGES !== 'undefined') ? TOTAL_MUSHAF_PAGES : 604;
             let n = parseInt(mushafState.pageNum, 10) || 1;
             if (n < 1) n = 1;
-            if (n > TOTAL_MUSHAF_PAGES) n = TOTAL_MUSHAF_PAGES;
+            if (n > maxPages) n = maxPages;
             mushafState.pageNum = n;
-            if (status) status.textContent = t('page') + ' ' + n + ' / ' + TOTAL_MUSHAF_PAGES;
+            if (status) status.textContent = (typeof t === 'function' ? t('page') : 'Page') + ' ' + n + ' / ' + maxPages;
             const pn = document.getElementById('mushafPageNum');
             if (pn) pn.textContent = String(n);
             let sid = 1;
+            const starts = (typeof SURAH_START_PAGE !== 'undefined') ? SURAH_START_PAGE : {};
             for (let i = 1; i <= 114; i++) {
-                if ((SURAH_START_PAGE[i] || 1) <= n) sid = i;
+                if ((starts[i] || 1) <= n) sid = i;
             }
             mushafState.surahId = sid;
             const sl = document.getElementById('mushafSurahLabel');
-            if (sl) sl.textContent = getSurahName(sid);
+            if (sl) sl.textContent = (typeof getSurahName === 'function') ? getSurahName(sid) : String(sid);
             const juzEl = document.getElementById('mushafJuz');
             if (juzEl) {
                 const juz = Math.min(30, Math.max(1, Math.ceil(n / 20)));
-                juzEl.textContent = t('juz') + ' ' + juz;
+                juzEl.textContent = (typeof t === 'function' ? t('juz') : 'Juz') + ' ' + juz;
             }
             const sel = document.getElementById('mushafSurahSelect');
             if (sel) {
@@ -1906,48 +1916,40 @@
                     for (let i = 1; i <= 114; i++) {
                         const o = document.createElement('option');
                         o.value = i;
-                        o.textContent = i + ' - ' + getSurahName(i);
+                        o.textContent = i + ' - ' + ((typeof getSurahName === 'function') ? getSurahName(i) : i);
                         sel.appendChild(o);
                     }
-                    sel.onchange = () => {
+                    sel.onchange = function() {
                         const id = parseInt(sel.value, 10);
                         mushafState.surahId = id;
-                        mushafState.pageNum = SURAH_START_PAGE[id] || 1;
+                        mushafState.pageNum = (starts[id] || 1);
                         renderMushafPageImage();
                     };
                 } else {
-                    Array.from(sel.options).forEach(o => {
+                    Array.from(sel.options).forEach(function(o) {
                         const id = parseInt(o.value, 10);
-                        if (id) o.textContent = id + ' - ' + getSurahName(id);
+                        if (id) o.textContent = id + ' - ' + ((typeof getSurahName === 'function') ? getSurahName(id) : id);
                     });
                 }
                 sel.value = String(sid);
             }
-            content.innerHTML = '<div class="mushaf-loading">' + t('loadingPage') + '</div>';
-            // أولاً: نص عثماني من api.quran.com (موثوق + CORS) مع تخزين محلي
-            loadMushafTextPage(n, content).then(ok => {
+            content.innerHTML = '<div class="mushaf-loading">' + (typeof t === 'function' ? t('loadingPage') : '...') + '</div>';
+            loadMushafTextPage(n, content).then(function(ok) {
                 if (ok) return;
-                // ثانياً: صورة
-                const p = String(n).padStart(3, '0');
-                const sources = [
-                    'https://cdn.jsdelivr.net/gh/GovarJabbar/Quran-PNG@master/' + p + '.png',
-                    'https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/' + p + '.png'
-                ];
-                let si = 0;
-                const tryImg = () => {
-                    if (si >= sources.length) {
-                        content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">' + t('pageLoadFail') + '</p>';
-                        return;
-                    }
-                    const img = document.createElement('img');
-                    img.className = 'mushaf-page-img';
-                    img.alt = 'page ' + n;
-                    img.onload = () => { content.innerHTML = ''; content.appendChild(img); };
-                    img.onerror = () => { si++; tryImg(); };
-                    img.src = sources[si++];
-                };
-                tryImg();
+                content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">' +
+                    (typeof t === 'function' ? t('pageLoadFail') : 'Failed') + '</p>' +
+                    '<p style="text-align:center"><button type="button" id="mushafRetryBtn" style="padding:10px 16px;background:var(--primary);color:#fff;border:none;border-radius:10px">' +
+                    (typeof t === 'function' ? t('loadingPage') : 'Retry') + '</button></p>';
+                const rb = document.getElementById('mushafRetryBtn');
+                if (rb) rb.onclick = function() { renderMushafPageImage(); };
+            }).catch(function() {
+                content.innerHTML = '<p style="text-align:center;padding:24px;color:#c0392b">Error</p>';
             });
+            } catch (err) {
+                console.error('mushaf render', err);
+                const content = document.getElementById('mushafContent');
+                if (content) content.innerHTML = '<p style="text-align:center;padding:20px">Error: ' + err.message + '</p>';
+            }
         }
 
         
@@ -2018,7 +2020,7 @@
                     const num = (v.verse_key || '').split(':')[1] || String(v.verse_number || '');
                     const ar = v.text_uthmani || (v.text_uthmani === undefined ? '' : v.text_uthmani);
                     // بعض الاستجابات تضع النص في text_uthmani عبر fields
-                    const arabic = ar || v.text_uthmani || '';
+                    const arabic = ar || v.text_uthmani || v.text || '';
                     html += '<div class="mushaf-verse-block">';
                     html += '<div class="mushaf-ayah-ar">' + arabic +
                         ' <span class="mushaf-num">' + toArabicIndic(num) + '</span></div>';
@@ -2113,6 +2115,19 @@
             document.addEventListener('DOMContentLoaded', bind);
             setInterval(bind, 1500);
         })();
+
+        
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.nav-btn[data-section="mushaf"]');
+            if (btn) {
+                e.preventDefault();
+                openMushaf();
+            }
+            var prev = e.target.closest('#mushafPrev, #mushafPrev2');
+            if (prev) { e.preventDefault(); mushafTurn(-1); }
+            var next = e.target.closest('#mushafNext, #mushafNext2');
+            if (next) { e.preventDefault(); mushafTurn(1); }
+        });
 
         function hideSplash() {
             const splash = document.getElementById('splashScreen');
